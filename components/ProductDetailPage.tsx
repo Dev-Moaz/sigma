@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
-import Image from "next/image";
 import {
   motion,
   useMotionValue,
@@ -20,6 +19,7 @@ import {
   faDisplay,
   faShieldHalved,
   faBolt,
+  faBatteryFull,
   faCheck,
   faMemory,
   faHardDrive,
@@ -114,8 +114,8 @@ const C = {
 
 function GrainOverlay({ strength = 0.035 }: { strength?: number }) {
   return (
-    <div aria-hidden="true" className="pointer-events-none select-none" style={{ position: "fixed", inset: 0, zIndex: 9998, opacity: strength, animation: "pdp-grain 0.15s steps(1) infinite" }}>
-      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <div aria-hidden className="pointer-events-none select-none" style={{ position: "fixed", inset: 0, zIndex: 9998, opacity: strength, animation: "pdp-grain 0.15s steps(1) infinite" }}>
+      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
         <filter id="pdp-g"><feTurbulence type="fractalNoise" baseFrequency="0.72" numOctaves="4" stitchTiles="stitch" /><feColorMatrix type="saturate" values="0" /></filter>
         <rect width="100%" height="100%" filter="url(#pdp-g)" />
       </svg>
@@ -127,7 +127,7 @@ function SplitReveal({ text, delay = 0, className = "" }: { text: string; delay?
   return (
     <span className={className} aria-label={text}>
       {text.split(" ").map((word, wi) => (
-        <span key={wi} style={{ display: "inline-block", whiteSpace: "nowrap", marginRight: "0.22em" }} aria-hidden="true">
+        <span key={wi} style={{ display: "inline-block", whiteSpace: "nowrap", marginRight: "0.22em" }}>
           {word.split("").map((ch, ci) => (
             <span key={ci} style={{ display: "inline-block", overflow: "hidden", lineHeight: 1 }}>
               <motion.span style={{ display: "inline-block" }} initial={{ y: "108%", opacity: 0 }} animate={{ y: "0%", opacity: 1 }} transition={{ duration: 0.95, delay: delay + (wi * 4 + ci) * 0.042, ease: [0.16, 1, 0.3, 1] }}>{ch}</motion.span>
@@ -172,7 +172,7 @@ function TypewriterStat({ lines, accentColor, className = "", typingSpeed = 52, 
 
   useEffect(() => { if (!inView) { setDisplayed(""); setPhase("typing"); } }, [inView]);
 
-  return <span ref={ref} className={className} aria-live="polite">{displayed}<motion.span aria-hidden="true" animate={{ opacity: [1, 0] }} transition={{ duration: 0.55, repeat: Infinity, repeatType: "reverse" }} style={{ color: accentColor, marginLeft: 2 }}>|</motion.span></span>;
+  return <span ref={ref} className={className}>{displayed}<motion.span animate={{ opacity: [1, 0] }} transition={{ duration: 0.55, repeat: Infinity, repeatType: "reverse" }} style={{ color: accentColor, marginLeft: 2 }}>|</motion.span></span>;
 }
 
 function WordReveal({ text, delay = 0, className = "", style }: { text: string; delay?: number; className?: string; style?: React.CSSProperties }) {
@@ -181,7 +181,7 @@ function WordReveal({ text, delay = 0, className = "", style }: { text: string; 
   return (
     <p ref={ref} className={className} style={style} aria-label={text}>
       {text.split(" ").map((word, i) => (
-        <span key={i} aria-hidden="true" style={{ display: "inline-block", overflow: "hidden", marginRight: "0.28em" }}>
+        <span key={i} style={{ display: "inline-block", overflow: "hidden", marginRight: "0.28em" }}>
           <motion.span style={{ display: "inline-block" }} initial={{ y: "100%", opacity: 0 }} animate={inView ? { y: "0%", opacity: 1 } : {}} transition={{ duration: 0.78, delay: delay + i * 0.075, ease: [0.16, 1, 0.3, 1] }}>{word}</motion.span>
         </span>
       ))}
@@ -208,7 +208,7 @@ function CountUp({ to, suffix = "", prefix = "", duration = 1800 }: { to: number
   return <span ref={ref}>{prefix}{val}{suffix}</span>;
 }
 
-function MagneticBtn({ children, onClick, accentColor, confirmed, compact = false, ariaLabel }: { children: React.ReactNode; onClick: () => void; accentColor: string; confirmed: boolean; compact?: boolean; ariaLabel?: string; }) {
+function MagneticBtn({ children, onClick, accentColor, confirmed, compact = false }: { children: React.ReactNode; onClick: () => void; accentColor: string; confirmed: boolean; compact?: boolean; }) {
   const ref = useRef<HTMLButtonElement>(null);
   const mx = useMotionValue(0); const my = useMotionValue(0);
   const sx = useSpring(mx, { stiffness: 220, damping: 22, mass: 0.1 });
@@ -224,12 +224,10 @@ function MagneticBtn({ children, onClick, accentColor, confirmed, compact = fals
       }}
       onMouseLeave={() => { mx.set(0); my.set(0); }}
       onClick={onClick} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-      aria-label={ariaLabel}
-      aria-pressed={confirmed}
       className={`pdp-body relative overflow-hidden font-semibold rounded-xl flex items-center justify-center gap-2.5 ${compact ? "h-11 px-6 text-sm" : "h-14 md:h-16 px-8 md:px-14 text-base"}`}
     >
-      <motion.div className="absolute inset-0" animate={{ background: confirmed ? `linear-gradient(135deg, ${C.emerald}, #059669)` : `linear-gradient(135deg, ${accentColor} 0%, #6366f1 55%, ${C.purple} 100%)` }} transition={{ duration: 0.4 }} aria-hidden="true" />
-      {!confirmed && <div className="absolute inset-y-0 w-1/3 opacity-25 pointer-events-none" style={{ background: "linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent)", animation: "pdp-shimmer 2.4s ease-in-out infinite" }} aria-hidden="true" />}
+      <motion.div className="absolute inset-0" animate={{ background: confirmed ? `linear-gradient(135deg, ${C.emerald}, #059669)` : `linear-gradient(135deg, ${accentColor} 0%, #6366f1 55%, ${C.purple} 100%)` }} transition={{ duration: 0.4 }} />
+      {!confirmed && <div className="absolute inset-y-0 w-1/3 opacity-25 pointer-events-none" style={{ background: "linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent)", animation: "pdp-shimmer 2.4s ease-in-out infinite" }} />}
       <span className="relative z-10 flex items-center gap-2.5 text-white">{children}</span>
     </motion.button>
   );
@@ -239,7 +237,7 @@ function Marquee({ items }: { items: string[] }) {
   const { t } = useTheme();
   const all = [...items, ...items];
   return (
-    <div className="overflow-hidden w-full" style={{ borderTop: `1px solid ${t.borderLight}`, borderBottom: `1px solid ${t.borderLight}` }} aria-hidden="true">
+    <div className="overflow-hidden w-full" style={{ borderTop: `1px solid ${t.borderLight}`, borderBottom: `1px solid ${t.borderLight}` }}>
       <div className="flex whitespace-nowrap" style={{ animation: "pdp-marquee 30s linear infinite" }}>
         {all.map((item, i) => (
           <span key={i} className="pdp-mono text-[11px] uppercase tracking-[0.22em] px-8 py-4 inline-flex items-center gap-6 shrink-0" style={{ color: t.textSecondary }}>
@@ -290,7 +288,6 @@ function CpuVisual({ accentColor }: { accentColor: string }) {
       onMouseLeave={handleMouseLeave} 
       className="relative w-full h-full min-h-[480px] flex items-center justify-center cursor-crosshair" 
       style={{ perspective: "1800px" }}
-      aria-hidden="true"
     >
       <div className="absolute w-[75%] h-[75%] rounded-full blur-[100px] opacity-20 transition-colors duration-700 pointer-events-none" style={{ background: brandColor }} />
 
@@ -420,7 +417,7 @@ function RamVisual({ accentColor, ramAmount }: { accentColor: string, ramAmount:
   const handleMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
 
   return (
-    <div ref={ref} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative w-full h-full min-h-[400px] flex items-center justify-center cursor-crosshair" style={{ perspective: "1500px" }} aria-hidden="true">
+    <div ref={ref} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative w-full h-full min-h-[400px] flex items-center justify-center cursor-crosshair" style={{ perspective: "1500px" }}>
       <div className="absolute w-[60%] h-[40%] rounded-full blur-[100px] opacity-20 pointer-events-none" style={{ background: accentColor }} />
 
       <motion.div animate={{ y: [-8, 8, -8] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} className="pointer-events-none">
@@ -490,7 +487,7 @@ function StorageVisual({ accentColor, storageName }: { accentColor: string, stor
   const handleMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
 
   return (
-    <div ref={ref} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative w-full h-full min-h-[400px] flex items-center justify-center cursor-crosshair" style={{ perspective: "1500px" }} aria-hidden="true">
+    <div ref={ref} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative w-full h-full min-h-[400px] flex items-center justify-center cursor-crosshair" style={{ perspective: "1500px" }}>
       <div className="absolute w-[60%] h-[40%] rounded-full blur-[120px] opacity-20 pointer-events-none" style={{ background: accentColor }} />
 
       <motion.div animate={{ y: [-5, 5, -5] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} className="pointer-events-none">
@@ -610,7 +607,7 @@ function GpuVisual({ accentColor }: { accentColor: string }) {
   );
 
   return (
-    <div ref={ref} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative w-full h-full min-h-[480px] flex items-center justify-center cursor-crosshair" style={{ perspective: "1800px" }} aria-hidden="true">
+    <div ref={ref} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative w-full h-full min-h-[480px] flex items-center justify-center cursor-crosshair" style={{ perspective: "1800px" }}>
       <div className="absolute w-[80%] h-[60%] rounded-full blur-[120px] opacity-20 pointer-events-none transition-colors duration-700" style={{ background: accentColor }} />
 
       <motion.div style={{ x: holoShiftX, y: holoShiftY, rotateX, rotateY, transformStyle: "preserve-3d" }} className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
@@ -725,7 +722,7 @@ function DisplayVisual({ accentColor }: { accentColor: string }) {
   const handleMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
 
   return (
-    <div ref={ref} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative w-full h-full min-h-[480px] flex items-center justify-center cursor-crosshair" style={{ perspective: "1500px" }} aria-hidden="true">
+    <div ref={ref} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative w-full h-full min-h-[480px] flex items-center justify-center cursor-crosshair" style={{ perspective: "1500px" }}>
       
       <div className="absolute w-[70%] h-[50%] rounded-full blur-[120px] opacity-30 pointer-events-none" style={{ background: accentColor }} />
 
@@ -808,6 +805,130 @@ function DisplayVisual({ accentColor }: { accentColor: string }) {
   );
 }
 
+function BatteryVisual({ accentColor }: { accentColor: string }) {
+  const { t } = useTheme();
+  const ref = useRef<HTMLDivElement>(null);
+  
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [22, -22]), { stiffness: 100, damping: 30 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-30, 30]), { stiffness: 100, damping: 30 });
+
+  const glareX = useTransform(mouseX, [-0.5, 0.5], ["200%", "-200%"]);
+  
+  const layer1X = useTransform(mouseX, [-0.5, 0.5], [10, -10]);
+  const layer1Y = useTransform(mouseY, [-0.5, 0.5], [10, -10]);
+  const layer2X = useTransform(mouseX, [-0.5, 0.5], [25, -25]);
+  const layer2Y = useTransform(mouseY, [-0.5, 0.5], [25, -25]);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
+    mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+  const handleMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
+
+  return (
+    <div ref={ref} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative w-full h-full min-h-[420px] flex items-center justify-center cursor-crosshair" style={{ perspective: "1800px" }}>
+      
+      <div className="absolute w-[60%] h-[50%] rounded-full blur-[100px] opacity-20 pointer-events-none" style={{ background: accentColor }} />
+
+      <motion.div animate={{ y: [-12, 12, -12] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} className="pointer-events-none">
+        <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative w-[340px] sm:w-[420px] h-[160px] sm:h-[190px]">
+          
+          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-[90%] h-16 bg-black/70 blur-2xl rounded-[100%]" style={{ transform: "translateZ(-40px)" }} />
+
+          <div className="absolute inset-x-2 inset-y-0 rounded-xl bg-[#0f0f0f] border border-[#222] shadow-[0_20px_40px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col justify-between p-2" style={{ transform: "translateZ(-15px)" }}>
+             <div className="absolute inset-0 opacity-40" style={{ backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 10px, #1a1a1a 10px, #1a1a1a 12px)" }} />
+             {[...Array(4)].map((_, i) => (
+                <div key={`screw-${i}`} className={`absolute w-3 h-3 rounded-full border border-[#333] bg-[#050505] flex items-center justify-center shadow-inner ${i===0?'top-2 left-2':i===1?'top-2 right-2':i===2?'bottom-2 left-2':'bottom-2 right-2'}`}>
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#111]" />
+                </div>
+             ))}
+          </div>
+
+          <div className="absolute inset-0 p-4 flex gap-3 z-10" style={{ transform: "translateZ(5px)" }}>
+            {[...Array(3)].map((_, i) => (
+              <div key={`cell-${i}`} className="flex-1 relative rounded-lg border border-[#333] overflow-hidden shadow-inner flex flex-col justify-center bg-[#050505]">
+                <svg width="100%" height="100%" className="absolute inset-0 opacity-20">
+                  <pattern id={`hex-${i}`} width="14" height="24" patternUnits="userSpaceOnUse" patternTransform="scale(0.5)">
+                    <path d="M7 0L14 4V12L7 16L0 12V4L7 0Z" fill="none" stroke={accentColor} strokeWidth="1" />
+                  </pattern>
+                  <rect width="100%" height="100%" fill={`url(#hex-${i})`} />
+                </svg>
+                <div className="absolute inset-x-0 bottom-0 top-1/4 rounded-t-sm opacity-80 mix-blend-screen" style={{ background: `linear-gradient(0deg, ${accentColor} 0%, transparent 100%)` }} />
+                <motion.div 
+                  className="absolute inset-0 opacity-60"
+                  style={{ background: `repeating-linear-gradient(180deg, transparent, transparent 4px, ${accentColor} 4px, ${accentColor} 5px)` }}
+                  animate={{ backgroundPosition: ["0px 0px", "0px -40px"] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                />
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-white/20 rounded-full" />
+                <div className="absolute bottom-2 left-2 pdp-mono text-[6px] text-white/50 tracking-widest bg-black/40 px-1 rounded-sm">
+                  BANK_0{i+1}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <motion.div className="absolute top-1/2 -left-3 -translate-y-1/2 w-10 h-16 bg-[#111] border border-[#444] rounded-sm shadow-xl flex flex-col items-center justify-center gap-1 z-20" style={{ transform: "translateZ(15px)", x: layer1X, y: layer1Y }}>
+             <div className="w-6 h-6 bg-[#0a0a0a] border border-[#333] rounded-sm flex flex-wrap gap-[1px] p-[2px]">
+               {[...Array(9)].map((_, i) => <div key={i} className="w-[calc(33.33%-1px)] h-[calc(33.33%-1px)] bg-[#222]" />)}
+             </div>
+             <div className="pdp-mono text-[5px] text-white/40 tracking-widest mt-1">BMS.AI</div>
+             <motion.div className="w-1.5 h-1.5 rounded-full mt-1" style={{ background: accentColor, boxShadow: `0 0 8px ${accentColor}` }} animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 2, repeat: Infinity }} />
+          </motion.div>
+
+          <motion.div className="absolute -inset-2 rounded-xl backdrop-blur-sm border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] overflow-hidden z-30 pointer-events-none" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.2) 100%)", transform: "translateZ(30px)", x: layer2X, y: layer2Y }}>
+            <motion.div className="absolute inset-0 mix-blend-overlay opacity-60" style={{ background: "linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.6) 45%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.6) 55%, transparent 70%)", x: glareX }} />
+            <motion.div className="absolute top-0 bottom-0 w-[2px] opacity-50 shadow-[0_0_15px_currentColor]" style={{ background: accentColor, color: accentColor }} animate={{ left: ["-10%", "110%", "-10%"] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} />
+            <div className="absolute inset-4 flex flex-col justify-between">
+               <div className="flex justify-between items-start">
+                 <div>
+                   <div className="pdp-display text-white font-black text-3xl sm:text-4xl leading-none tracking-tighter" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>
+                     99.9<span className="text-sm sm:text-lg text-white/70">Wh</span>
+                   </div>
+                   <div className="pdp-mono text-[7px] sm:text-[9px] text-white/60 tracking-[0.3em] mt-1 drop-shadow-md">
+                     SOLID-STATE GRAPHENE
+                   </div>
+                 </div>
+                 
+                 <div className="flex flex-col items-end">
+                   <div className="flex items-center gap-1.5 px-2 py-1 rounded-sm border backdrop-blur-md" style={{ borderColor: `${accentColor}40`, background: `${accentColor}10` }}>
+                     <FontAwesomeIcon icon={faCheck} style={{ color: accentColor, fontSize: "8px" }} />
+                     <span className="pdp-mono text-[7px] text-white tracking-widest">TSA APPROVED</span>
+                   </div>
+                   <div className="pdp-mono text-[8px] sm:text-[10px] text-white/40 tracking-[0.2em] mt-2">
+                     CAPACITY: <span className="text-white">8600mAh</span>
+                   </div>
+                 </div>
+               </div>
+
+               <div className="flex justify-between items-end w-full">
+                 <div className="w-8 h-8 border-l-2 border-b-2 opacity-50" style={{ borderColor: accentColor }} />
+                 <div className="flex flex-col items-center">
+                    <div className="flex gap-1 mb-1">
+                      {[...Array(5)].map((_, i) => (
+                        <div key={i} className="w-4 h-1 rounded-full bg-white/20 overflow-hidden relative">
+                          <motion.div className="absolute inset-y-0 left-0 w-full" style={{ background: accentColor }} animate={i===4 ? { x: ["-100%", "0%"] } : {}} transition={i===4 ? { duration: 1.5, repeat: Infinity } : {}} />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="pdp-mono text-[6px] tracking-[0.4em] text-white/50">FAST CHARGE 0-50% 35M</div>
+                 </div>
+                 <div className="w-8 h-8 border-r-2 border-b-2 opacity-50" style={{ borderColor: accentColor }} />
+               </div>
+            </div>
+          </motion.div>
+
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // CHAPTER COMPONENTS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -828,7 +949,7 @@ function Chapter({ index, stat, statSuffix, label, headline, body, accentColor, 
 
   return (
     <section ref={ref} className={`relative min-h-[90vh] flex flex-col ${flip ? "lg:flex-row-reverse" : "lg:flex-row"} items-stretch overflow-hidden`}>
-      <div className="pdp-display absolute pointer-events-none select-none z-0 leading-none" style={{ fontSize: "clamp(16rem,32vw,30rem)", color: accentColor, opacity: 0.028, top: "50%", transform: "translateY(-50%)", [flip ? "right" : "left"]: "-0.04em" }} aria-hidden="true">
+      <div className="pdp-display absolute pointer-events-none select-none z-0 leading-none" style={{ fontSize: "clamp(16rem,32vw,30rem)", color: accentColor, opacity: 0.028, top: "50%", transform: "translateY(-50%)", [flip ? "right" : "left"]: "-0.04em" }} aria-hidden>
         {String(index + 1).padStart(2, "0")}
       </div>
 
@@ -856,7 +977,7 @@ function Chapter({ index, stat, statSuffix, label, headline, body, accentColor, 
           <TypewriterStat lines={supportLines} accentColor={accentColor} typingSpeed={38} pauseDuration={1800} deletingSpeed={22} />
         </div>
 
-        <div className="h-px w-full overflow-hidden mb-7" style={{ background: t.borderLight }} aria-hidden="true">
+        <div className="h-px w-full overflow-hidden mb-7" style={{ background: t.borderLight }}>
           <motion.div style={{ width: lineW, height: "100%", background: `linear-gradient(90deg, ${accentColor}, transparent)` }} />
         </div>
 
@@ -867,7 +988,7 @@ function Chapter({ index, stat, statSuffix, label, headline, body, accentColor, 
       </motion.div>
 
       <div className="relative z-10 w-full lg:w-[55%] xl:w-[52%] flex items-center justify-center min-h-[50vh] lg:min-h-0 py-16 lg:py-0">
-         {visualNode || <div className="absolute inset-0 pointer-events-none" style={{ background:`radial-gradient(ellipse 75% 65% at 50% 50%, ${accentColor}12, transparent 72%)` }} aria-hidden="true" />}
+         {visualNode || <div className="absolute inset-0 pointer-events-none" style={{ background:`radial-gradient(ellipse 75% 65% at 50% 50%, ${accentColor}12, transparent 72%)` }} />}
       </div>
     </section>
   );
@@ -875,7 +996,7 @@ function Chapter({ index, stat, statSuffix, label, headline, body, accentColor, 
 
 function ChapterDivider({ accentColor }: { accentColor: string }) {
   return (
-    <motion.div initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} className="origin-left mx-6 md:mx-12 lg:mx-20" style={{ height: 1, background: `linear-gradient(90deg, ${accentColor}45, transparent 65%)` }} aria-hidden="true" />
+    <motion.div initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} className="origin-left mx-6 md:mx-12 lg:mx-20" style={{ height: 1, background: `linear-gradient(90deg, ${accentColor}45, transparent 65%)` }} />
   );
 }
 
@@ -998,6 +1119,19 @@ function getDisplayContent(hz: number, spec: string): ChapterContent {
   };
 }
 
+function getBatteryContent(hours: number): ChapterContent {
+  if (hours >= 10) return {
+    headline: "Sunrise to midnight. Unplugged.",
+    body: "Intelligent power routing across efficiency and performance cores. A full day of creative work without hunting for an outlet.",
+    supportLines: ["Intelligent Power Routing", "0 → 50% in 35 Minutes", `${hours}h Maximum Endurance`]
+  };
+  return {
+    headline: "Unleashed mobility.",
+    body: "Optimized battery life for extended gaming and work sessions on the go. Fast charge capabilities keep you moving.",
+    supportLines: ["Smart Power Management", "Fast Charge Supported", `Up to ${hours} Hours Battery`]
+  };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1069,6 +1203,7 @@ export default function ProductDetailPage({ product }: { product: Product }) {
   // استخراج المحتوى الديناميكي لجميع الفصول
   const displaySpec = product.specs.find(s => s.label.toLowerCase().includes("display"))?.value || "Nano-IPS";
   const displayContent = getDisplayContent(md.display_hz, displaySpec);
+  const batteryContent = getBatteryContent(md.battery_hours);
   const cpuContent = getCpuContent(md.cpu);
   const gpuContent = getGpuContent(md.gpu);
   const ramContent = getRamContent(ramNum);
@@ -1104,32 +1239,32 @@ export default function ProductDetailPage({ product }: { product: Product }) {
         }}
         onMouseLeave={() => { mx.set(0); my.set(0); }}
       >
-        <motion.div style={{ x: bgX, y: bgYt }} className="absolute inset-0 pointer-events-none z-0" aria-hidden="true">
+        <motion.div style={{ x: bgX, y: bgYt }} className="absolute inset-0 pointer-events-none z-0">
           <svg className="w-full h-full opacity-[0.045]" style={{ position: "absolute", inset: 0 }}>
             <defs><pattern id="g" width="52" height="52" patternUnits="userSpaceOnUse"><path d="M52 0L0 0 0 52" fill="none" stroke={t.gridStroke} strokeWidth="0.5" /></pattern></defs>
             <rect width="100%" height="100%" fill="url(#g)" />
           </svg>
         </motion.div>
 
-        <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: `radial-gradient(ellipse 78% 68% at 50% 50%, transparent 18%, ${theme === "dark" ? "#000000ec" : "transparent"} 100%)` }} aria-hidden="true" />
+        <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: `radial-gradient(ellipse 78% 68% at 50% 50%, transparent 18%, ${theme === "dark" ? "#000000ec" : "transparent"} 100%)` }} />
 
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
           <div style={{ position: "absolute", width: 700, height: 700, borderRadius: "50%", background: `radial-gradient(circle, ${C.cyan}13, transparent 65%)`, top: "50%", left: "42%", transform: "translate(-50%,-50%)", animation: "pdp-breathe 11s ease-in-out infinite" }} />
           <div style={{ position: "absolute", width: 500, height: 500, borderRadius: "50%", background: `radial-gradient(circle, ${C.purple}11, transparent 65%)`, top: "34%", left: "63%", transform: "translate(-50%,-50%)", animation: "pdp-breathe 14s ease-in-out 1.8s infinite" }} />
         </div>
 
-        <div className="absolute z-0 pointer-events-none" style={{ width: 500, height: 500, borderRadius: "50%", background: `conic-gradient(from 180deg, transparent 0deg, ${selectedColor.hex}18 55deg, transparent 110deg)`, filter: "blur(55px)", opacity: 0.55, top: "50%", left: "50%", transform: "translate(-50%,-50%)", transition: "background 0.8s ease" }} aria-hidden="true" />
+        <div className="absolute z-0 pointer-events-none" style={{ width: 500, height: 500, borderRadius: "50%", background: `conic-gradient(from 180deg, transparent 0deg, ${selectedColor.hex}18 55deg, transparent 110deg)`, filter: "blur(55px)", opacity: 0.55, top: "50%", left: "50%", transform: "translate(-50%,-50%)", transition: "background 0.8s ease" }} />
 
         <div className="relative z-10 w-full max-w-[1440px] mx-auto px-6 lg:px-16 pt-28 pb-16 flex flex-col lg:flex-row items-center gap-10">
           <motion.div style={{ y: heroTextY, opacity: heroTextOp, skewX: heroSkew }} className="w-full lg:w-[44%] flex flex-col z-20 text-center lg:text-left">
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.05 }} className="mb-6 flex items-center gap-3 justify-center lg:justify-start">
-              <div className="w-1.5 h-1.5 rounded-full" style={{ background: selectedColor.hex, animation: "pdp-breathe 2.2s ease-in-out infinite" }} aria-hidden="true" />
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: selectedColor.hex, animation: "pdp-breathe 2.2s ease-in-out infinite" }} />
               <span className="pdp-mono text-[11px] uppercase tracking-[0.22em]" style={{ color: t.textSecondary }}>{product.brand} · {product.category}</span>
             </motion.div>
 
-            <h1 className="pdp-display mb-6 leading-[0.94] tracking-[-0.01em]" style={{ fontSize: "clamp(3.2rem,8vw,6.5rem)" }}>
+            <div className="pdp-display mb-6 leading-[0.94] tracking-[-0.01em]" style={{ fontSize: "clamp(3.2rem,8vw,6.5rem)" }}>
               <SplitReveal text={product.name} delay={0.12} />
-            </h1>
+            </div>
 
             <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.88 }} className="pdp-body text-base md:text-lg font-medium leading-relaxed mb-10 max-w-md mx-auto lg:mx-0" style={{ color: t.textSecondary }}>
               {product.tagline}
@@ -1139,17 +1274,17 @@ export default function ProductDetailPage({ product }: { product: Product }) {
               <div className="flex flex-col items-center lg:items-start">
                 <div className="flex items-end gap-3 mb-1.5">
                   <span className="pdp-display leading-none" style={{ fontSize: "clamp(2.4rem,6vw,4rem)" }}>${product.price.toLocaleString()}</span>
-                  {discount > 0 && <span className="pdp-body text-lg line-through mb-1 opacity-30" aria-label={`Original price: $${product.originalPrice?.toLocaleString()}`}>${product.originalPrice?.toLocaleString()}</span>}
+                  {discount > 0 && <span className="pdp-body text-lg line-through mb-1 opacity-30">${product.originalPrice?.toLocaleString()}</span>}
                 </div>
                 {discount > 0 && <span className="pdp-mono text-[10px] px-2.5 py-1 rounded-lg uppercase tracking-widest" style={{ background: `${C.rose}20`, color: C.rose }}>Save {discount}% · ${((product.originalPrice || 0) - product.price).toLocaleString()} off</span>}
               </div>
 
               {product.colorVariants && product.colorVariants.length > 0 && (
                 <div className="sm:ml-auto flex flex-col items-center lg:items-end">
-                  <span className="pdp-mono text-[10px] uppercase tracking-[0.2em] opacity-40 mb-2.5" aria-live="polite">{selectedColor.name}</span>
-                  <div className="flex items-center gap-2.5" role="group" aria-label="Choose a color variant">
+                  <span className="pdp-mono text-[10px] uppercase tracking-[0.2em] opacity-40 mb-2.5">{selectedColor.name}</span>
+                  <div className="flex items-center gap-2.5">
                     {product.colorVariants.map((cv) => (
-                      <button key={cv.name} onClick={() => setSelectedColor(cv)} title={cv.name} aria-label={`Select color ${cv.name}`} aria-pressed={selectedColor.name === cv.name} className="relative flex items-center justify-center w-7 h-7 rounded-full border-2 transition-all duration-300" style={{ borderColor: selectedColor.name === cv.name ? cv.hex : "transparent" }}>
+                      <button key={cv.name} onClick={() => setSelectedColor(cv)} title={cv.name} className="relative flex items-center justify-center w-7 h-7 rounded-full border-2 transition-all duration-300" style={{ borderColor: selectedColor.name === cv.name ? cv.hex : "transparent" }}>
                         <div className="w-4 h-4 rounded-full" style={{ background: cv.hex }} />
                         {selectedColor.name === cv.name && (
                           <motion.div layoutId="cv-ring" className="absolute -inset-1 rounded-full border" style={{ borderColor: cv.hex, boxShadow: `0 0 14px ${cv.hex}50` }} transition={{ type: "spring", stiffness: 360, damping: 28 }} />
@@ -1162,34 +1297,19 @@ export default function ProductDetailPage({ product }: { product: Product }) {
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 1.28 }} className="flex items-center gap-3 justify-center lg:justify-start">
-              <MagneticBtn onClick={handleAddToCart} accentColor={selectedColor.hex} confirmed={isAdded} ariaLabel="Add to cart">
+              <MagneticBtn onClick={handleAddToCart} accentColor={selectedColor.hex} confirmed={isAdded}>
                 <FontAwesomeIcon icon={isAdded ? faCheck : faCartShopping} /> {isAdded ? "Added to Cart" : "Add to Cart"}
               </MagneticBtn>
-              <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWish(product.id); }} aria-label={isWished ? "Remove from Wishlist" : "Add to Wishlist"} aria-pressed={isWished} className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center rounded-xl border backdrop-blur-md transition-all duration-300 group" style={{ background: t.cardBg, borderColor: t.borderLight }}>
+              <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWish(product.id); }} className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center rounded-xl border backdrop-blur-md transition-all duration-300 group" style={{ background: t.cardBg, borderColor: t.borderLight }}>
                 <FontAwesomeIcon icon={faHeart} className="transition-opacity" style={{ color: isWished ? C.rose : t.textSecondary, opacity: isWished ? 1 : 0.35 }} />
               </button>
             </motion.div>
           </motion.div>
 
           <motion.div style={{ x: imgX, y: imgYt, scale: heroScale, opacity: heroOp }} className="w-full lg:w-[56%] relative flex items-center justify-center h-[320px] md:h-[540px] z-10 shrink-0">
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2/3 h-16 pointer-events-none z-0" style={{ background: `radial-gradient(ellipse, ${selectedColor.hex}20 0%, transparent 70%)`, filter: "blur(18px)" }} aria-hidden="true" />
-            
-            <motion.div 
-              initial={{ scale: 2.8, opacity: 0, filter: "blur(45px)" }} 
-              animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }} 
-              transition={{ duration: 1.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }} 
-              className="relative w-full h-full" 
-              style={{ animation: "pdp-float 7.5s ease-in-out infinite", filter: "drop-shadow(0 55px 95px rgba(0,0,0,0.45)) drop-shadow(0 12px 24px rgba(0,0,0,0.3))" }}
-            >
-              <Image 
-                src={product.images[0] || "/placeholder.png"} 
-                alt={product.name} 
-                fill 
-                priority 
-                sizes="(max-width: 1024px) 100vw, 60vw"
-                className="object-contain relative z-10 pointer-events-none" 
-                draggable={false} 
-              />
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2/3 h-16 pointer-events-none z-0" style={{ background: `radial-gradient(ellipse, ${selectedColor.hex}20 0%, transparent 70%)`, filter: "blur(18px)" }} />
+            <div className="relative w-full h-full" style={{ animation: "pdp-float 7.5s ease-in-out infinite" }}>
+              <motion.img initial={{ scale: 2.8, opacity: 0, filter: "blur(45px)" }} animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }} transition={{ duration: 1.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }} src={product.images[0]} alt={product.name} className="w-full h-full object-contain relative z-10" draggable={false} style={{ filter: "drop-shadow(0 55px 95px rgba(0,0,0,0.45)) drop-shadow(0 12px 24px rgba(0,0,0,0.3))" }} />
               {[
                 { label: "CPU",   val: cpuSpec.split(" ").slice(0, 3).join(" "), color: C.cyan,   s: { top: "16%", left: "4%" },   d: 1.5 },
                 { label: "GPU",   val: gpuSpec.split(" ").slice(0, 3).join(" "), color: C.purple, s: { top: "56%", right: "2%" },  d: 1.7 },
@@ -1197,7 +1317,7 @@ export default function ProductDetailPage({ product }: { product: Product }) {
               ].map((pin) => (
                 <motion.div key={pin.label} initial={{ opacity: 0, scale: 0.45, filter: "blur(10px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} transition={{ duration: 0.75, delay: pin.d, ease: [0.16, 1, 0.3, 1] }} className="absolute z-30 pointer-events-none" style={pin.s}>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl backdrop-blur-xl border whitespace-nowrap" style={{ background: `${t.bgSecondary}cc`, borderColor: `${pin.color}28` }}>
-                    <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: pin.color, animation: "pdp-pulse-dot 2.5s ease-in-out infinite" }} aria-hidden="true" />
+                    <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: pin.color, animation: "pdp-pulse-dot 2.5s ease-in-out infinite" }} />
                     <div>
                       <p className="pdp-mono text-[9px] uppercase tracking-widest opacity-38 mb-0.5">{pin.label}</p>
                       <p className="pdp-body text-xs font-semibold">{pin.val}</p>
@@ -1205,11 +1325,11 @@ export default function ProductDetailPage({ product }: { product: Product }) {
                   </div>
                 </motion.div>
               ))}
-            </motion.div>
+            </div>
           </motion.div>
         </div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.9, duration: 1 }} className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none" aria-hidden="true">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.9, duration: 1 }} className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none">
           <span className="pdp-mono text-[10px] uppercase tracking-[0.22em] opacity-22">Scroll</span>
           <div style={{ width: 1, height: 44, background: t.borderLight, overflow: "hidden", opacity: 0.28 }}>
             <motion.div style={{ width: "100%", height: "50%", background: "currentColor" }} animate={{ y: [-44, 44] }} transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }} />
@@ -1286,9 +1406,25 @@ export default function ProductDetailPage({ product }: { product: Product }) {
       />
       <ChapterDivider accentColor={C.blue} />
 
-      {/* Chapter 5 — GPU */}
+      {/* Chapter 5 — Battery */}
       <Chapter
         index={4}
+        stat={md.battery_hours}
+        statSuffix="hr"
+        label="Endurance"
+        headline={batteryContent.headline}
+        body={batteryContent.body}
+        accentColor={C.amber}
+        icon={faBatteryFull}
+        supportLines={batteryContent.supportLines}
+        visualNode={<BatteryVisual accentColor={C.amber} />}
+        flip={false}
+      />
+      <ChapterDivider accentColor={C.amber} />
+
+      {/* Chapter 6 — GPU */}
+      <Chapter
+        index={5}
         stat={gpuVramNum}
         statSuffix="GB"
         label="Graphics Power"
@@ -1298,20 +1434,20 @@ export default function ProductDetailPage({ product }: { product: Product }) {
         icon={faShieldHalved}
         supportLines={gpuContent.supportLines}
         visualNode={<GpuVisual accentColor={gpuAccent} />}
-        flip={false}
+        flip={true}
       />
       <ChapterDivider accentColor={gpuAccent} />
 
       {/* ════════════════════ FULL SPECS ════════════════════ */}
-      <section className="relative z-10 py-28 md:py-40 px-6 md:px-12 lg:px-20 max-w-[1440px] mx-auto" aria-labelledby="specs-heading">
+      <section className="relative z-10 py-28 md:py-40 px-6 md:px-12 lg:px-20 max-w-[1440px] mx-auto">
         <div className="flex items-end justify-between mb-16 gap-8 flex-wrap">
           <div>
             <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="pdp-mono text-[11px] uppercase tracking-[0.24em] mb-3 block" style={{ color: C.cyan }}>
               Full Specifications
             </motion.span>
-            <motion.h2 id="specs-heading" initial={{ y: 60, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} viewport={{ once: true }} transition={{ duration: 1.05, ease: [0.16, 1, 0.3, 1] }} className="pdp-display leading-[0.94]" style={{ fontSize: "clamp(3rem,7vw,6rem)", color: t.text }}>
+            <motion.div initial={{ y: 60, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} viewport={{ once: true }} transition={{ duration: 1.05, ease: [0.16, 1, 0.3, 1] }} className="pdp-display leading-[0.94]" style={{ fontSize: "clamp(3rem,7vw,6rem)", color: t.text }}>
               Under<br />The Hood.
-            </motion.h2>
+            </motion.div>
           </div>
 
           <div className="flex items-end gap-10 md:gap-16">
@@ -1334,7 +1470,7 @@ export default function ProductDetailPage({ product }: { product: Product }) {
           {product.specs.map((spec, i) => (
             <motion.div key={spec.label} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: "-28px 0px" }} transition={{ duration: 0.6, delay: (i % 6) * 0.065, ease: [0.16, 1, 0.3, 1] }} whileHover={{ paddingLeft: "1.2rem" }} className="group flex items-center justify-between gap-6 py-[1.1rem] transition-all duration-300 cursor-default" style={{ borderBottom: `1px solid ${t.borderLight}` }}>
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-0.5 h-5 rounded-full shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: spec.color || C.cyan }} aria-hidden="true" />
+                <div className="w-0.5 h-5 rounded-full shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: spec.color || C.cyan }} />
                 <span className="pdp-mono text-[11px] uppercase tracking-[0.14em] truncate opacity-45">{spec.label}</span>
               </div>
               <span className="pdp-body text-sm md:text-base font-semibold text-right shrink-0">{spec.value}</span>
@@ -1345,25 +1481,25 @@ export default function ProductDetailPage({ product }: { product: Product }) {
 
       {/* ════════════════════ CLOSING CTA ════════════════════ */}
       <section className="relative min-h-[72vh] flex flex-col items-center justify-center text-center overflow-hidden py-24 px-6 md:px-12 lg:px-20" style={{ borderTop: `1px solid ${t.borderLight}` }}>
-        <div className="pdp-display absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden" style={{ fontSize: "clamp(8rem,23vw,21rem)", color: t.text, opacity: 0.022, lineHeight: 1 }} aria-hidden="true">
+        <div className="pdp-display absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden" style={{ fontSize: "clamp(8rem,23vw,21rem)", color: t.text, opacity: 0.022, lineHeight: 1 }} aria-hidden>
           {product.name.split(" ")[0]}
         </div>
-        <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: `radial-gradient(ellipse 62% 52% at 50% 50%, ${C.purple}10, transparent 72%)` }} aria-hidden="true" />
+        <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: `radial-gradient(ellipse 62% 52% at 50% 50%, ${C.purple}10, transparent 72%)` }} />
 
         <motion.div initial={{ opacity: 0, y: 45 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }} className="relative z-10 flex flex-col items-center gap-7 max-w-2xl">
           <span className="pdp-mono text-[11px] uppercase tracking-[0.24em] opacity-42">Ready to own it?</span>
           <h2 className="pdp-display leading-[0.94]" style={{ fontSize: "clamp(3rem,8vw,6.5rem)", color: t.text }}>{product.name}</h2>
           <p className="pdp-body text-lg font-medium leading-relaxed opacity-50">{product.tagline}</p>
           <div className="flex items-center gap-4 flex-wrap justify-center mt-2">
-            <MagneticBtn onClick={handleAddToCart} accentColor={selectedColor.hex} confirmed={isAdded} ariaLabel="Add to cart">
+            <MagneticBtn onClick={handleAddToCart} accentColor={selectedColor.hex} confirmed={isAdded}>
               <FontAwesomeIcon icon={isAdded ? faCheck : faCartShopping} /> {isAdded ? "Added to Cart" : `Add to Cart — $${product.price.toLocaleString()}`}
             </MagneticBtn>
-            <button aria-label="Compare Models" className="pdp-body h-14 md:h-16 px-8 rounded-xl border font-semibold text-base transition-all duration-300 hover:opacity-60" style={{ borderColor: t.borderLight, background: "transparent", color: t.text }}>
+            <button className="pdp-body h-14 md:h-16 px-8 rounded-xl border font-semibold text-base transition-all duration-300 hover:opacity-60" style={{ borderColor: t.borderLight, background: "transparent", color: t.text }}>
               Compare Models
             </button>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <div className="w-2 h-2 rounded-full" style={{ background: C.emerald, animation: "pdp-breathe 2.2s ease-in-out infinite" }} aria-hidden="true" />
+            <div className="w-2 h-2 rounded-full" style={{ background: C.emerald, animation: "pdp-breathe 2.2s ease-in-out infinite" }} />
             <span className="pdp-mono text-[10px] uppercase tracking-widest opacity-42">In Stock · Ships within 24hr</span>
           </div>
         </motion.div>
@@ -1373,8 +1509,8 @@ export default function ProductDetailPage({ product }: { product: Product }) {
       <motion.div style={{ y: barY, opacity: barOp }} className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none p-3 md:p-4">
         <div className="max-w-5xl mx-auto rounded-2xl backdrop-blur-2xl border pointer-events-auto flex items-center justify-between px-5 md:px-8 py-3 md:py-4" style={{ background: `${t.bgOverlay}`, borderColor: t.borderLight, boxShadow: `0 -4px 60px rgba(0,0,0,0.18), 0 0 0 1px ${t.borderLight}` }}>
           <div className="hidden md:flex items-center gap-4">
-            <div className="relative w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 overflow-hidden" style={{ background: t.cardBg, borderColor: t.borderLight }}>
-              <Image src={product.images[0] || "/placeholder.png"} alt={product.name} width={32} height={32} className="object-contain" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center border shrink-0" style={{ background: t.cardBg, borderColor: t.borderLight }}>
+              <img src={product.images[0]} alt="" className="w-8 h-8 object-contain" />
             </div>
             <div>
               <p className="pdp-body text-sm font-semibold leading-tight">{product.name}</p>
@@ -1391,7 +1527,7 @@ export default function ProductDetailPage({ product }: { product: Product }) {
               <span className="pdp-display text-[1.6rem]">${product.price.toLocaleString()}</span>
               <span className="pdp-mono text-[10px] uppercase tracking-widest flex items-center gap-1 mt-0.5" style={{ color: C.emerald }}><FontAwesomeIcon icon={faBolt} /> In Stock</span>
             </div>
-            <MagneticBtn onClick={handleAddToCart} accentColor={selectedColor.hex} confirmed={isAdded} compact ariaLabel="Quick Buy">
+            <MagneticBtn onClick={handleAddToCart} accentColor={selectedColor.hex} confirmed={isAdded} compact>
               <FontAwesomeIcon icon={isAdded ? faCheck : faCartShopping} /> {isAdded ? "Added!" : "Buy Now"}
             </MagneticBtn>
           </div>
