@@ -304,6 +304,7 @@ export default function CheckoutPage() {
                   </div>
                   <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: t.accentText }}>Selected</span>
                 </div>
+                
               </div>
             </motion.div>
 
