@@ -245,30 +245,39 @@ This project is a high-end, cinematic E-commerce platform specialized in PC Hard
   - **`products.ts`:** Handles live product updates and metadata synchronization.
   - **`orders.ts`:** Processes checkout transactions, creates order records, maps order items, and updates inventory stock levels atomically.
 
-### 27. `app/(main)/checkout/page.tsx` (Cinematic Checkout - PLANNED)
+### 27. `app/(main)/checkout/page.tsx` (Cinematic Checkout - COMPLETED)
 
-- **Role:** A high-end, secure interface for completing purchases using Cash on Delivery (COD).
-- **Key Features (In Development):**
-  - **3D HUD Summary:** Features a floating, tilt-responsive "Order Summary" card that provides real-time calculations.
-  - **Glassmorphic Transactional Form:** A futuristic, multi-step form with glowing validation states and smooth transitions.
-  - **Auto-Sync:** Intelligently pre-fills user shipping data from the Supabase `profiles` table while allowing one-time overrides.
-
-### 28. `app/(main)/admin/page.tsx` (The Command Center - PLANNED)
-
-- **Role:** A premium, restricted dashboard for site administrators to manage the store's "inner workings."
-- **Key Features (In Development):**
-  - **Live Order HUD:** A real-time tracking interface for managing order statuses (Pending ➔ Shipped) with cinematic UI feedback.
-  - **Inventory Control:** A full CRUD interface for managing products live in the Supabase database.
-  - **Analytics Matrix:** Features glowing data visualizations for Total Revenue, Active Users, and Top-Selling Hardware using `CountUp` and Framer Motion bars.
-  - **Role-Based Protection:** Strictly guarded by server-side role checks, ensuring only users with `role: 'admin'` in their profile can access the HUD.
-
-### 29. `scripts/schema.sql` (Database Blueprint)
-
-- **Role:** The definitive SQL schema defining the structure and security policies of the Supabase database.
+- **Role:** A premium, secure interface for completing Cash on Delivery (COD) orders with real-time feedback.
 - **Key Features:**
-  - **Relational Integrity:** Defines complex relationships between `products`, `hardware`, `profiles`, `orders`, and `order_items`.
-  - **Granular RLS (Row Level Security):** Implements strict access control, ensuring users can only see their own data while admins maintain global visibility.
-  - **Performance Optimization:** Includes indexes and type constraints (like product category enums) for lightning-fast querying.
+  - **Dynamic Order Verification:** Verifies cart pricing and discounts client-side and validates details during the transaction.
+  - **Automatic Profile Sync:** Pre-fills the shipping address, phone, and full name directly from the user's Supabase profile while allowing custom one-time overrides.
+  - **Volt Points Integration:** Auto-calculates earned Volt Points upon purchase and securely syncs them with the customer's profile.
+  - **Transactional Safety:** Dispatches order details to the `orders` and `order_items` tables in Supabase, updating stock counts atomically.
+
+### 28. `app/(main)/admin/page.tsx` (The Admin Control Center - COMPLETED)
+
+- **Role:** A premium, secure command center dashboard for site administrators to manage live inventory and process customer orders.
+- **Key Features:**
+  - **Role-Based Protection:** Strictly guarded at the layout/server-action level, requiring users to have `role = 'admin'` in their `profiles` table to access or modify data.
+  - **Live Inventory Manager (CRUD):** Fully functional dashboard to insert, update, or soft-delete product catalog items and hardware components in real-time.
+  - **Order Pipeline Manager:** A real-time interface for administrators to view customer orders, inspect item details, and transition order statuses (Pending ➔ Processing ➔ Shipped ➔ Completed) with direct DB updates.
+  - **Analytics Panel:** Displays dynamic counters for Total Revenue, Total Orders, Average Order Value, and active accounts.
+
+### 29. `components/AuthSync.tsx` (Token & Session Sync Engine - COMPLETED)
+
+- **Role:** A client-side listener that bridges the gap between client-side Supabase Auth and Server Actions.
+- **Key Features:**
+  - **Active Session Synchronization:** Automatically listens to Supabase auth state transitions (`onAuthStateChange`) on the client.
+  - **Cookie-Based Auth Bridge:** Encrypts and writes active access tokens (`sb-access-token`) and refresh tokens (`sb-refresh-token`) to secure HTTP-only-friendly cookies.
+  - **Zero Session Mismatch:** Guarantees Server Actions and Server-Rendered pages are always aware of the active client session instantly.
+
+### 30. `scripts/profiles-ultimate.sql` (Bulletproof Database Triggers)
+
+- **Role:** Implements the official, robust database trigger pattern recommended by Supabase for user initialization.
+- **Key Features:**
+  - **`handle_new_user()` Trigger:** A highly privileged PostgreSQL function (`SECURITY DEFINER`) that automatically listens for inserts into `auth.users` and creates a matching row in `public.profiles` on the spot.
+  - **Zero-Fail Registration:** Eliminates race conditions or permission issues during the signup phase, allowing instantaneous profile creation with default parameters (100 Volt Points, `role: 'user'`).
+  - **Cascading Safety:** Configured with `ON DELETE CASCADE` to clean up profile data if a user is deleted from the Auth center.
 
 ---
 
