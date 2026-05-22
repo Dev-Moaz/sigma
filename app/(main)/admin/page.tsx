@@ -52,7 +52,7 @@ function CinematicReveal({ children, delay = 0 }: { children: React.ReactNode; d
 }
 
 export default function AdminDashboard() {
-  const { t, theme } = useTheme();
+  const { t, isDark, toggleTheme } = useTheme();
   const router = useRouter();
 
   // Authentication & Access state
@@ -360,8 +360,8 @@ export default function AdminDashboard() {
 
   // Input Field Styles Generator
   const getFieldStyle = () => ({
-    backgroundColor: theme === "dark" ? "rgba(255, 255, 255, 0.03)" : "rgba(0, 0, 0, 0.02)",
-    borderColor: theme === "dark" ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.1)",
+    backgroundColor: isDark ? "rgba(255, 255, 255, 0.03)" : "rgba(0, 0, 0, 0.03)",
+    borderColor: isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)",
     color: t.text
   });
 
@@ -414,7 +414,12 @@ export default function AdminDashboard() {
   // 3. RENDER MAIN ADMIN DASHBOARD
   // ----------------------------------------------------
   return (
-    <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col gap-8 relative z-10" style={{ background: t.bg }}>
+    <div 
+      className={`min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col gap-8 relative transition-all duration-300 ${
+        isAddModalOpen ? "z-[100]" : "z-10"
+      }`} 
+      style={{ background: t.bg }}
+    >
       
       {/* Header */}
       <CinematicReveal delay={0.1}>
@@ -928,7 +933,7 @@ export default function AdminDashboard() {
               exit={{ scale: 0.95, y: 30 }}
               className="max-w-3xl w-full rounded-3xl border p-6 sm:p-8 backdrop-blur-2xl max-h-[92vh] overflow-y-auto flex flex-col gap-6 shadow-2xl relative scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent z-[1000]"
               style={{ 
-                background: theme === "dark" ? "rgba(20, 20, 20, 0.95)" : t.cardBg, 
+                background: isDark ? "rgba(20, 20, 20, 0.98)" : "rgba(255, 255, 255, 0.98)", 
                 borderColor: t.borderLight,
                 boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
                 color: t.text
@@ -964,15 +969,15 @@ export default function AdminDashboard() {
                   <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: t.textSecondary }}>
                     Product Type / نوع المنتج
                   </label>
-                  <div className="grid grid-cols-2 gap-2 p-1.5 rounded-xl border bg-black/40 backdrop-blur-md" style={{ borderColor: t.borderLight }}>
+                  <div className="grid grid-cols-2 gap-2 p-1.5 rounded-xl border" style={{ backgroundColor: isDark ? "rgba(0, 0, 0, 0.4)" : "rgba(0, 0, 0, 0.05)", borderColor: t.borderLight }}>
                     <button 
                       type="button"
                       onClick={() => setAddType("laptop")}
                       className="py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all duration-300"
                       style={{
                         background: addType === "laptop" ? t.accentText : "transparent",
-                        color: addType === "laptop" ? "#fff" : "rgba(255, 255, 255, 0.4)",
-                        boxShadow: addType === "laptop" ? `0 0 15px ${t.accentText}30` : "none"
+                        color: addType === "laptop" ? "#fff" : (isDark ? "rgba(255, 255, 255, 0.4)" : "rgba(0, 0, 0, 0.4)"),
+                        boxShadow: addType === "laptop" && isDark ? `0 0 15px ${t.accentText}30` : "none"
                       }}
                     >
                       Laptop
@@ -983,8 +988,8 @@ export default function AdminDashboard() {
                       className="py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all duration-300"
                       style={{
                         background: addType === "hardware" ? t.accentText : "transparent",
-                        color: addType === "hardware" ? "#fff" : "rgba(255, 255, 255, 0.4)",
-                        boxShadow: addType === "hardware" ? `0 0 15px ${t.accentText}30` : "none"
+                        color: addType === "hardware" ? "#fff" : (isDark ? "rgba(255, 255, 255, 0.4)" : "rgba(0, 0, 0, 0.4)"),
+                        boxShadow: addType === "hardware" && isDark ? `0 0 15px ${t.accentText}30` : "none"
                       }}
                     >
                       Hardware Component
@@ -1002,7 +1007,11 @@ export default function AdminDashboard() {
                       type="text" required
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
-                      className="px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30" 
+                      className={`px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:ring-1 ${
+                        isDark 
+                          ? "focus:border-cyan-500/50 focus:ring-cyan-500/30 text-white placeholder-white/25" 
+                          : "focus:border-cyan-600/50 focus:ring-cyan-600/30 text-black placeholder-black/30"
+                      }`} 
                       style={getFieldStyle()}
                       placeholder="e.g. ROG Strix SCAR 16"
                     />
@@ -1015,7 +1024,11 @@ export default function AdminDashboard() {
                       type="text" required
                       value={formData.brand}
                       onChange={e => setFormData({...formData, brand: e.target.value})}
-                      className="px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30" 
+                      className={`px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:ring-1 ${
+                        isDark 
+                          ? "focus:border-cyan-500/50 focus:ring-cyan-500/30 text-white placeholder-white/25" 
+                          : "focus:border-cyan-600/50 focus:ring-cyan-600/30 text-black placeholder-black/30"
+                      }`} 
                       style={getFieldStyle()}
                       placeholder="e.g. Asus, Intel, AMD"
                     />
@@ -1031,7 +1044,11 @@ export default function AdminDashboard() {
                       type="number" required min="1"
                       value={formData.price || ""}
                       onChange={e => setFormData({...formData, price: Number(e.target.value)})}
-                      className="px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 font-semibold" 
+                      className={`px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:ring-1 font-semibold ${
+                        isDark 
+                          ? "focus:border-cyan-500/50 focus:ring-cyan-500/30 text-white placeholder-white/25" 
+                          : "focus:border-cyan-600/50 focus:ring-cyan-600/30 text-black placeholder-black/30"
+                      }`} 
                       style={getFieldStyle()}
                       placeholder="2499"
                     />
@@ -1046,7 +1063,11 @@ export default function AdminDashboard() {
                         type="number"
                         value={formData.original_price || ""}
                         onChange={e => setFormData({...formData, original_price: Number(e.target.value)})}
-                        className="px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 font-semibold" 
+                        className={`px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:ring-1 font-semibold ${
+                          isDark 
+                            ? "focus:border-cyan-500/50 focus:ring-cyan-500/30 text-white placeholder-white/25" 
+                            : "focus:border-cyan-600/50 focus:ring-cyan-600/30 text-black placeholder-black/30"
+                        }`} 
                         style={getFieldStyle()}
                         placeholder="2799"
                       />
@@ -1060,7 +1081,11 @@ export default function AdminDashboard() {
                         type="number"
                         value={formData.discount_price || ""}
                         onChange={e => setFormData({...formData, discount_price: Number(e.target.value)})}
-                        className="px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 font-semibold" 
+                        className={`px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:ring-1 font-semibold ${
+                          isDark 
+                            ? "focus:border-cyan-500/50 focus:ring-cyan-500/30 text-white placeholder-white/25" 
+                            : "focus:border-cyan-600/50 focus:ring-cyan-600/30 text-black placeholder-black/30"
+                        }`} 
                         style={getFieldStyle()}
                         placeholder="2199"
                       />
@@ -1075,7 +1100,11 @@ export default function AdminDashboard() {
                       type="number" required min="0"
                       value={formData.stock}
                       onChange={e => setFormData({...formData, stock: Number(e.target.value)})}
-                      className="px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 font-semibold" 
+                      className={`px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:ring-1 font-semibold ${
+                        isDark 
+                          ? "focus:border-cyan-500/50 focus:ring-cyan-500/30 text-white placeholder-white/25" 
+                          : "focus:border-cyan-600/50 focus:ring-cyan-600/30 text-black placeholder-black/30"
+                      }`} 
                       style={getFieldStyle()}
                     />
                   </div>
@@ -1090,7 +1119,11 @@ export default function AdminDashboard() {
                       type="text"
                       value={formData.tagline}
                       onChange={e => setFormData({...formData, tagline: e.target.value})}
-                      className="px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30" 
+                      className={`px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:ring-1 ${
+                        isDark 
+                          ? "focus:border-cyan-500/50 focus:ring-cyan-500/30 text-white placeholder-white/25" 
+                          : "focus:border-cyan-600/50 focus:ring-cyan-600/30 text-black placeholder-black/30"
+                      }`} 
                       style={getFieldStyle()}
                       placeholder="Uncompromising speed for competitive gamers."
                     />
@@ -1107,7 +1140,11 @@ export default function AdminDashboard() {
                       type="text" required
                       value={formData.category}
                       onChange={e => setFormData({...formData, category: e.target.value})}
-                      className="px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30" 
+                      className={`px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:ring-1 ${
+                        isDark 
+                          ? "focus:border-cyan-500/50 focus:ring-cyan-500/30 text-white placeholder-white/25" 
+                          : "focus:border-cyan-600/50 focus:ring-cyan-600/30 text-black placeholder-black/30"
+                      }`} 
                       style={getFieldStyle()}
                       placeholder={addType === "laptop" ? "gaming, business, ultrabooks" : "CPU, GPU, RAM, Storage"}
                     />
@@ -1121,7 +1158,11 @@ export default function AdminDashboard() {
                         type="text"
                         value={formData.sub_category}
                         onChange={e => setFormData({...formData, sub_category: e.target.value})}
-                        className="px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30" 
+                        className={`px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:ring-1 ${
+                          isDark 
+                            ? "focus:border-cyan-500/50 focus:ring-cyan-500/30 text-white placeholder-white/25" 
+                            : "focus:border-cyan-600/50 focus:ring-cyan-600/30 text-black placeholder-black/30"
+                        }`} 
                         style={getFieldStyle()}
                         placeholder="rtx-40-series, amd-ryzen"
                       />
@@ -1138,7 +1179,11 @@ export default function AdminDashboard() {
                     rows={2} required
                     value={formData.images}
                     onChange={e => setFormData({...formData, images: e.target.value})}
-                    className="px-4 py-3 rounded-xl border outline-none font-mono transition-all duration-300 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 text-xs" 
+                    className={`px-4 py-3 rounded-xl border outline-none font-mono transition-all duration-300 focus:ring-1 text-xs ${
+                      isDark 
+                        ? "focus:border-cyan-500/50 focus:ring-cyan-500/30 text-white placeholder-white/25" 
+                        : "focus:border-cyan-600/50 focus:ring-cyan-600/30 text-black placeholder-black/30"
+                    }`} 
                     style={getFieldStyle()}
                     placeholder="https://example.com/img1.png, https://example.com/img2.png"
                   />
@@ -1153,7 +1198,11 @@ export default function AdminDashboard() {
                     rows={3} required
                     value={formData.description}
                     onChange={e => setFormData({...formData, description: e.target.value})}
-                    className="px-4 py-3 rounded-xl border outline-none leading-relaxed transition-all duration-300 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30" 
+                    className={`px-4 py-3 rounded-xl border outline-none leading-relaxed transition-all duration-300 focus:ring-1 ${
+                      isDark 
+                        ? "focus:border-cyan-500/50 focus:ring-cyan-500/30 text-white placeholder-white/25" 
+                        : "focus:border-cyan-600/50 focus:ring-cyan-600/30 text-black placeholder-black/30"
+                    }`} 
                     style={getFieldStyle()}
                     placeholder="Describe the cinematic features and structural architectural highlights..."
                   />
@@ -1178,8 +1227,12 @@ export default function AdminDashboard() {
                       rows={5} required
                       value={formData.specs}
                       onChange={e => setFormData({...formData, specs: e.target.value})}
-                      className="px-4 py-3 rounded-xl border bg-black/50 text-emerald-400 outline-none font-mono text-[10px] leading-relaxed transition-all focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 scrollbar-thin" 
-                      style={{ borderColor: theme === "dark" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)" }}
+                      className={`px-4 py-3 rounded-xl border outline-none font-mono text-[10px] leading-relaxed transition-all focus:ring-1 ${
+                        isDark 
+                          ? "bg-black/50 text-emerald-400 focus:border-emerald-500/50 focus:ring-emerald-500/30" 
+                          : "bg-gray-50 text-emerald-700 focus:border-emerald-600/50 focus:ring-emerald-600/30"
+                      }`}
+                      style={{ borderColor: isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)" }}
                     />
                   </div>
                   {addType === "laptop" && (
@@ -1200,8 +1253,12 @@ export default function AdminDashboard() {
                         rows={5} required
                         value={formData.technical_metadata}
                         onChange={e => setFormData({...formData, technical_metadata: e.target.value})}
-                        className="px-4 py-3 rounded-xl border bg-black/50 text-emerald-400 outline-none font-mono text-[10px] leading-relaxed transition-all focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 scrollbar-thin" 
-                        style={{ borderColor: theme === "dark" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)" }}
+                        className={`px-4 py-3 rounded-xl border outline-none font-mono text-[10px] leading-relaxed transition-all focus:ring-1 ${
+                          isDark 
+                            ? "bg-black/50 text-emerald-400 focus:border-emerald-500/50 focus:ring-emerald-500/30" 
+                            : "bg-gray-50 text-emerald-700 focus:border-emerald-600/50 focus:ring-emerald-600/30"
+                        }`}
+                        style={{ borderColor: isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)" }}
                       />
                     </div>
                   )}
