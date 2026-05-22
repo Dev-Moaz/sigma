@@ -88,6 +88,7 @@ export async function signUpAction(email: string, password: string, fullName: st
       
       if (profileError) {
         console.error("Failed to create profile record:", profileError.message);
+        return { success: false, error: "Failed to initialize profile in database: " + profileError.message };
       }
     }
 
