@@ -249,6 +249,27 @@ export default function LoginPage() {
     });
     
     if (!error && data.user) {
+      // التحقق الدفاعي وإنشاء الملف الشخصي إذا لم يكن موجوداً (للمستخدمين القدامى)
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", data.user.id)
+          .maybeSingle();
+        
+        if (!profile) {
+          const fullName = data.user.user_metadata?.full_name || emailValue.split("@")[0];
+          await supabase.from("profiles").insert({
+            id: data.user.id,
+            full_name: fullName,
+            email: emailValue,
+            volt_points: 100,
+          });
+        }
+      } catch (profileErr) {
+        console.error("Defensive profile creation failed:", profileErr);
+      }
+
       setLoginStep("success");
       // توجيه للملف الشخصي بعد نجاح تسجيل الدخول
       setTimeout(() => {
