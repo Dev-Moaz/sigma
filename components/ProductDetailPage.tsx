@@ -1187,36 +1187,41 @@ export default function ProductDetailPage({ product }: { product: Product }) {
   const storageSize = storageMatch ? parseInt(storageMatch[1]) : 2;
   const storageUnit = storageMatch ? storageMatch[2].toUpperCase() : "TB";
 
-  const md = product.technical_metadata;
+  // تأمين كائن البيانات الفنية لتجنب توقف المعالجة (SSR Null Safety Guard)
+  const md = product.technical_metadata || {};
 
-  const cpuLower = md.cpu.toLowerCase();
+  const cpuLower = (md.cpu || "intel").toLowerCase();
   const cpuAccent = cpuLower.includes("amd") ? "#ED1C24" : cpuLower.includes("intel") ? "#0071C5" : C.cyan;
 
-  const gpuLower = md.gpu.toLowerCase();
+  const gpuLower = (md.gpu || "nvidia").toLowerCase();
   const gpuAccent = (gpuLower.includes("rtx") || gpuLower.includes("nvidia")) ? "#76B900" : (gpuLower.includes("rx") || gpuLower.includes("radeon")) ? "#ED1C24" : C.emerald;
 
-  // استخراج المحتوى الديناميكي لجميع الفصول
+  // تأمين المتغيرات العددية بقيم افتراضية مرنة لمنع أخطاء parseInt
+  const displayHz = parseInt(String(md.display_hz || 144)) || 144;
+  const batteryHours = parseInt(String(md.battery_hours || 8)) || 8;
+  const cpuCoresNum = parseInt(String(md.cpu_cores || 14)) || 14;
+  const gpuVramNum = parseInt(String(md.vram_gb || 8)) || 8;
+  const nvmeSpeed = parseFloat(String(md.nvme_speed_gbs || 7)) || 7;
+
+  // استخراج المحتوى الديناميكي الآمن لجميع الفصول
   const displaySpec = product.specs.find(s => s.label.toLowerCase().includes("display"))?.value || "Nano-IPS";
-  const displayContent = getDisplayContent(md.display_hz, displaySpec);
-  const batteryContent = getBatteryContent(md.battery_hours);
-  const cpuContent = getCpuContent(md.cpu);
-  const gpuContent = getGpuContent(md.gpu);
+  const displayContent = getDisplayContent(displayHz, displaySpec);
+  const batteryContent = getBatteryContent(batteryHours);
+  const cpuContent = getCpuContent(md.cpu || "Intel Processor");
+  const gpuContent = getGpuContent(md.gpu || "Nvidia Graphics");
   const ramContent = getRamContent(ramNum);
   const storageContent = getStorageContent(storageSize, storageUnit, stoSpec);
 
-  const connectivity = md.connectivity ??[];
-  const marqueeItems =[
+  const connectivity = md.connectivity ?? [];
+  const marqueeItems = [
     cpuSpec.split(" ").slice(0, 4).join(" "),
     `${ramNum}GB DDR5`,
-    `${md.display_hz}Hz Display`,
+    `${displayHz}Hz Display`,
     stoSpec.split(" ").slice(0, 3).join(" "),
     gpuSpec.split(" ").slice(0, 3).join(" "),
-    `${md.battery_hours}hr Battery`,
+    `${batteryHours}hr Battery`,
     ...connectivity.slice(0, 3),
   ].filter(Boolean) as string[];
-
-  const cpuCoresNum = parseInt(String(md.cpu_cores)) || 24;
-  const gpuVramNum = parseInt(String(md.vram_gb)) || 16;
 
   return (
     <main className="pdp-body relative min-h-screen -mt-20 sm:-mt-24 overflow-hidden" style={{ backgroundColor: t.bg, color: t.text }}>
@@ -1356,7 +1361,7 @@ export default function ProductDetailPage({ product }: { product: Product }) {
       {/* Chapter 2 — Display */}
       <Chapter
         index={1}
-        stat={md.display_hz}
+        stat={displayHz}
         statSuffix="Hz"
         label="Visual Fidelity"
         headline={displayContent.headline}
@@ -1404,7 +1409,7 @@ export default function ProductDetailPage({ product }: { product: Product }) {
       {/* Chapter 5 — Battery */}
       <Chapter
         index={4}
-        stat={md.battery_hours}
+        stat={batteryHours}
         statSuffix="hr"
         label="Endurance"
         headline={batteryContent.headline}
@@ -1449,7 +1454,7 @@ export default function ProductDetailPage({ product }: { product: Product }) {
             {[
               { n: product.rating,      s: "★",    l: "Rating",     c: C.amber  },
               { n: ramNum,              s: "GB",   l: "DDR5 RAM",   c: C.cyan   },
-              { n: md.nvme_speed_gbs,   s: "GB/s", l: "NVMe Speed", c: C.purple },
+              { n: nvmeSpeed,           s: "GB/s", l: "NVMe Speed", c: C.purple },
             ].map((s, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: i * 0.12 }} className="text-center">
                 <div className="pdp-display leading-none mb-1" style={{ fontSize: "clamp(2.2rem,4.5vw,3.5rem)", color: s.c }}>
@@ -1513,7 +1518,7 @@ export default function ProductDetailPage({ product }: { product: Product }) {
             </div>
           </div>
           <div className="hidden lg:flex items-center gap-2">
-            {[cpuSpec.split(" ").slice(0, 2).join(" "), `${ramNum}GB DDR5`, `${md.display_hz}Hz`].map((pill, i) => (
+            {[cpuSpec.split(" ").slice(0, 2).join(" "), `${ramNum}GB DDR5`, `${displayHz}Hz`].map((pill, i) => (
               <span key={i} className="pdp-mono text-[10px] uppercase tracking-widest px-2.5 py-1.5 rounded-lg" style={{ background: t.cardBg, color: t.textSecondary, border: `1px solid ${t.borderLight}` }}>{pill}</span>
             ))}
           </div>
