@@ -273,7 +273,7 @@ export default function AdminDashboard() {
         payload.badge = formData.badge;
         payload.technical_metadata = formData.technical_metadata;
         payload.color_variants = formData.color_variants;
-        payload.features = []; // توفير قيمة افتراضية متوافقة مع الـ Array لجدول المنتجات
+        payload.features = []; 
       } else {
         payload.discount_price = Number(formData.discount_price || 0);
         payload.is_new = formData.is_new;
@@ -325,7 +325,6 @@ export default function AdminDashboard() {
   if (!isAdmin) {
     return (
       <div className="min-h-[85vh] flex flex-col items-center justify-center p-6 relative overflow-hidden" style={{ background: t.bg }}>
-        {/* Glow background effects */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full blur-[120px] opacity-20 pointer-events-none" style={{ background: "#ef4444" }} />
         
         <CinematicReveal>
@@ -655,8 +654,8 @@ export default function AdminDashboard() {
 
                 <button
                   onClick={() => setIsAddModalOpen(true)}
-                  className="px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] flex items-center gap-2 self-start sm:self-auto"
-                  style={{ background: t.accentText, color: "#fff" }}
+                  className="px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] flex items-center gap-2 self-start sm:self-auto shadow-lg"
+                  style={{ background: t.accentText, color: "#fff", boxShadow: `0 4px 20px ${t.accentText}40` }}
                 >
                   <FontAwesomeIcon icon={faPlus} /> Add New Product
                 </button>
@@ -863,140 +862,177 @@ export default function AdminDashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50"
+            className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-hidden"
           >
             <motion.div 
               initial={{ scale: 0.95, y: 30 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 30 }}
-              className="max-w-3xl w-full rounded-3xl border p-6 sm:p-8 backdrop-blur-xl max-h-[92vh] overflow-y-auto flex flex-col gap-6"
-              style={{ background: t.cardBg, borderColor: t.borderLight }}
+              className="max-w-3xl w-full rounded-3xl border p-6 sm:p-8 backdrop-blur-2xl max-h-[92vh] overflow-y-auto flex flex-col gap-6 shadow-2xl relative scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+              style={{ 
+                background: theme === "dark" ? "rgba(20, 20, 20, 0.85)" : t.cardBg, 
+                borderColor: theme === "dark" ? "rgba(255, 255, 255, 0.08)" : t.borderLight,
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+              }}
             >
+              {/* Top ambient color bar for subtle cinematic accent */}
+              <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-3xl" style={{ background: `linear-gradient(90deg, ${t.accentText}, #06b6d4)` }} />
+
               {/* Header */}
-              <div className="flex justify-between items-center pb-4 border-b" style={{ borderColor: t.borderLight }}>
+              <div className="flex justify-between items-center pb-4 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
                 <div>
-                  <h3 className="hf text-xl font-extrabold" style={{ color: t.text }}>Catalog New Hardware Piece</h3>
-                  <p className="text-[10px] font-bold" style={{ color: t.textSecondary }}>Insert metadata directly into live Supabase tables.</p>
+                  <h3 className="hf text-xl font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "#fff" : t.text }}>
+                    Catalog New Hardware
+                  </h3>
+                  <p className="text-[11px] font-semibold mt-1" style={{ color: "rgba(255, 255, 255, 0.5)" }}>
+                    Insert structural metadata directly into live cloud matrices.
+                  </p>
                 </div>
                 <button 
                   onClick={() => setIsAddModalOpen(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center border transition-all hover:bg-white/5"
-                  style={{ borderColor: t.borderLight, color: t.text }}
+                  className="w-9 h-9 rounded-full flex items-center justify-center border transition-all hover:bg-white/5 active:scale-95"
+                  style={{ borderColor: "rgba(255, 255, 255, 0.1)", color: theme === "dark" ? "#fff" : t.text }}
                 >
                   <FontAwesomeIcon icon={faTimes} />
                 </button>
               </div>
 
               {/* Form Container */}
-              <form onSubmit={handleAddProductSubmit} className="flex flex-col gap-5 text-xs font-bold">
-                {/* Product Type Selector */}
-                <div className="flex flex-col gap-1.5">
-                  <label style={{ color: t.textSecondary }}>Database Target Table</label>
-                  <div className="grid grid-cols-2 gap-3 p-1 rounded-xl border bg-black/20" style={{ borderColor: t.borderLight }}>
+              <form onSubmit={handleAddProductSubmit} className="flex flex-col gap-6 text-xs font-bold">
+                
+                {/* Product Type Segmented Switch */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "rgba(255,255,255,0.6)" : t.textSecondary }}>
+                    Database Target Table
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 p-1.5 rounded-xl border bg-black/40 backdrop-blur-md" style={{ borderColor: "rgba(255, 255, 255, 0.08)" }}>
                     <button 
                       type="button"
                       onClick={() => setAddType("laptop")}
-                      className="py-2.5 rounded-lg text-xs font-bold transition-all"
+                      className="py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all duration-300"
                       style={{
                         background: addType === "laptop" ? t.accentText : "transparent",
-                        color: addType === "laptop" ? "#fff" : t.textSecondary
+                        color: addType === "laptop" ? "#fff" : "rgba(255, 255, 255, 0.4)",
+                        boxShadow: addType === "laptop" ? `0 0 15px ${t.accentText}30` : "none"
                       }}
                     >
-                      Products (Laptops) Table
+                      Laptops Table
                     </button>
                     <button 
                       type="button"
                       onClick={() => setAddType("hardware")}
-                      className="py-2.5 rounded-lg text-xs font-bold transition-all"
+                      className="py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all duration-300"
                       style={{
                         background: addType === "hardware" ? t.accentText : "transparent",
-                        color: addType === "hardware" ? "#fff" : t.textSecondary
+                        color: addType === "hardware" ? "#fff" : "rgba(255, 255, 255, 0.4)",
+                        boxShadow: addType === "hardware" ? `0 0 15px ${t.accentText}30` : "none"
                       }}
                     >
-                      Hardware Components Table
+                      Hardware Components
                     </button>
                   </div>
                 </div>
 
                 {/* Standard Fields Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label style={{ color: t.textSecondary }}>Product Name</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "rgba(255,255,255,0.6)" : t.textSecondary }}>
+                      Product Name
+                    </label>
                     <input 
                       type="text" required
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
-                      className="px-4 py-3 rounded-xl border bg-black/40 text-white outline-none" style={{ borderColor: t.borderLight }}
+                      className="px-4 py-3 rounded-xl border bg-white/[0.02] text-white outline-none transition-all duration-300 focus:bg-white/[0.04] focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 placeholder-white/20" 
+                      style={{ borderColor: "rgba(255,255,255,0.1)", color: "#fff" }}
                       placeholder="e.g. ROG Strix SCAR 16"
                     />
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label style={{ color: t.textSecondary }}>Brand</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "rgba(255,255,255,0.6)" : t.textSecondary }}>
+                      Brand
+                    </label>
                     <input 
                       type="text" required
                       value={formData.brand}
                       onChange={e => setFormData({...formData, brand: e.target.value})}
-                      className="px-4 py-3 rounded-xl border bg-black/40 text-white outline-none" style={{ borderColor: t.borderLight }}
+                      className="px-4 py-3 rounded-xl border bg-white/[0.02] text-white outline-none transition-all duration-300 focus:bg-white/[0.04] focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 placeholder-white/20" 
+                      style={{ borderColor: "rgba(255,255,255,0.1)", color: "#fff" }}
                       placeholder="e.g. Asus, Intel, AMD"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label style={{ color: t.textSecondary }}>Retail Price ($)</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "rgba(255,255,255,0.6)" : t.textSecondary }}>
+                      Retail Price ($)
+                    </label>
                     <input 
                       type="number" required min="1"
                       value={formData.price || ""}
                       onChange={e => setFormData({...formData, price: Number(e.target.value)})}
-                      className="px-4 py-3 rounded-xl border bg-black/40 text-white outline-none" style={{ borderColor: t.borderLight }}
+                      className="px-4 py-3 rounded-xl border bg-white/[0.02] text-white outline-none transition-all duration-300 focus:bg-white/[0.04] focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 placeholder-white/20 font-semibold" 
+                      style={{ borderColor: "rgba(255,255,255,0.1)", color: "#fff" }}
                       placeholder="2499"
                     />
                   </div>
                   
                   {addType === "laptop" ? (
-                    <div className="flex flex-col gap-1.5">
-                      <label style={{ color: t.textSecondary }}>Original Price ($) <span className="text-[9px]" style={{ color: t.textSubtle }}>(For discount calculation)</span></label>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "rgba(255,255,255,0.6)" : t.textSecondary }}>
+                        Original Price ($) <span className="text-[9px] lowercase opacity-65">(For discount calculations)</span>
+                      </label>
                       <input 
                         type="number"
                         value={formData.original_price || ""}
                         onChange={e => setFormData({...formData, original_price: Number(e.target.value)})}
-                        className="px-4 py-3 rounded-xl border bg-black/40 text-white outline-none" style={{ borderColor: t.borderLight }}
+                        className="px-4 py-3 rounded-xl border bg-white/[0.02] text-white outline-none transition-all duration-300 focus:bg-white/[0.04] focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 placeholder-white/20 font-semibold" 
+                        style={{ borderColor: "rgba(255,255,255,0.1)", color: "#fff" }}
                         placeholder="2799"
                       />
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-1.5">
-                      <label style={{ color: t.textSecondary }}>Discount Price ($) <span className="text-[9px]" style={{ color: t.textSubtle }}>(Deal price if applicable)</span></label>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "rgba(255,255,255,0.6)" : t.textSecondary }}>
+                        Discount Price ($) <span className="text-[9px] lowercase opacity-65">(Deal price if active)</span>
+                      </label>
                       <input 
                         type="number"
                         value={formData.discount_price || ""}
                         onChange={e => setFormData({...formData, discount_price: Number(e.target.value)})}
-                        className="px-4 py-3 rounded-xl border bg-black/40 text-white outline-none" style={{ borderColor: t.borderLight }}
+                        className="px-4 py-3 rounded-xl border bg-white/[0.02] text-white outline-none transition-all duration-300 focus:bg-white/[0.04] focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 placeholder-white/20 font-semibold" 
+                        style={{ borderColor: "rgba(255,255,255,0.1)", color: "#fff" }}
                         placeholder="2199"
                       />
                     </div>
                   )}
 
-                  <div className="flex flex-col gap-1.5">
-                    <label style={{ color: t.textSecondary }}>Initial Stock Level</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "rgba(255,255,255,0.6)" : t.textSecondary }}>
+                      Initial Stock Level
+                    </label>
                     <input 
                       type="number" required min="0"
                       value={formData.stock}
                       onChange={e => setFormData({...formData, stock: Number(e.target.value)})}
-                      className="px-4 py-3 rounded-xl border bg-black/40 text-white outline-none" style={{ borderColor: t.borderLight }}
+                      className="px-4 py-3 rounded-xl border bg-white/[0.02] text-white outline-none transition-all duration-300 focus:bg-white/[0.04] focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 placeholder-white/20 font-semibold" 
+                      style={{ borderColor: "rgba(255,255,255,0.1)", color: "#fff" }}
                     />
                   </div>
                 </div>
 
                 {addType === "laptop" && (
-                  <div className="flex flex-col gap-1.5">
-                    <label style={{ color: t.textSecondary }}>Tagline / Catchphrase</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "rgba(255,255,255,0.6)" : t.textSecondary }}>
+                      Tagline / Catchphrase
+                    </label>
                     <input 
                       type="text"
                       value={formData.tagline}
                       onChange={e => setFormData({...formData, tagline: e.target.value})}
-                      className="px-4 py-3 rounded-xl border bg-black/40 text-white outline-none" style={{ borderColor: t.borderLight }}
+                      className="px-4 py-3 rounded-xl border bg-white/[0.02] text-white outline-none transition-all duration-300 focus:bg-white/[0.04] focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 placeholder-white/20" 
+                      style={{ borderColor: "rgba(255,255,255,0.1)", color: "#fff" }}
                       placeholder="Uncompromising speed for competitive gamers."
                     />
                   </div>
@@ -1004,24 +1040,30 @@ export default function AdminDashboard() {
 
                 {/* Categories Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label style={{ color: t.textSecondary }}>Category Name</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "rgba(255,255,255,0.6)" : t.textSecondary }}>
+                      Category Name
+                    </label>
                     <input 
                       type="text" required
                       value={formData.category}
                       onChange={e => setFormData({...formData, category: e.target.value})}
-                      className="px-4 py-3 rounded-xl border bg-black/40 text-white outline-none" style={{ borderColor: t.borderLight }}
+                      className="px-4 py-3 rounded-xl border bg-white/[0.02] text-white outline-none transition-all duration-300 focus:bg-white/[0.04] focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 placeholder-white/20" 
+                      style={{ borderColor: "rgba(255,255,255,0.1)", color: "#fff" }}
                       placeholder={addType === "laptop" ? "gaming, business, ultrabooks" : "CPU, GPU, RAM, Storage"}
                     />
                   </div>
                   {addType === "laptop" && (
-                    <div className="flex flex-col gap-1.5">
-                      <label style={{ color: t.textSecondary }}>Subcategory ID</label>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "rgba(255,255,255,0.6)" : t.textSecondary }}>
+                        Subcategory ID
+                      </label>
                       <input 
                         type="text"
                         value={formData.sub_category}
                         onChange={e => setFormData({...formData, sub_category: e.target.value})}
-                        className="px-4 py-3 rounded-xl border bg-black/40 text-white outline-none" style={{ borderColor: t.borderLight }}
+                        className="px-4 py-3 rounded-xl border bg-white/[0.02] text-white outline-none transition-all duration-300 focus:bg-white/[0.04] focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 placeholder-white/20" 
+                        style={{ borderColor: "rgba(255,255,255,0.1)", color: "#fff" }}
                         placeholder="rtx-40-series, amd-ryzen"
                       />
                     </div>
@@ -1029,74 +1071,86 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Media Links */}
-                <div className="flex flex-col gap-1.5">
-                  <label style={{ color: t.textSecondary }}>Product Images (URLs separated by comma)</label>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "rgba(255,255,255,0.6)" : t.textSecondary }}>
+                    Product Images (URLs separated by comma)
+                  </label>
                   <textarea 
                     rows={2} required
                     value={formData.images}
                     onChange={e => setFormData({...formData, images: e.target.value})}
-                    className="px-4 py-3 rounded-xl border bg-black/40 text-white outline-none font-mono" style={{ borderColor: t.borderLight }}
+                    className="px-4 py-3 rounded-xl border bg-white/[0.02] text-white outline-none font-mono transition-all duration-300 focus:bg-white/[0.04] focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 placeholder-white/20 text-xs" 
+                    style={{ borderColor: "rgba(255,255,255,0.1)", color: "#fff" }}
                     placeholder="https://example.com/img1.png, https://example.com/img2.png"
                   />
                 </div>
 
                 {/* Description */}
-                <div className="flex flex-col gap-1.5">
-                  <label style={{ color: t.textSecondary }}>Detailed Product Description</label>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "rgba(255,255,255,0.6)" : t.textSecondary }}>
+                    Detailed Product Description
+                  </label>
                   <textarea 
                     rows={3} required
                     value={formData.description}
                     onChange={e => setFormData({...formData, description: e.target.value})}
-                    className="px-4 py-3 rounded-xl border bg-black/40 text-white outline-none leading-relaxed" style={{ borderColor: t.borderLight }}
-                    placeholder="Describe the cinematic layout and benefits of this component..."
+                    className="px-4 py-3 rounded-xl border bg-white/[0.02] text-white outline-none leading-relaxed transition-all duration-300 focus:bg-white/[0.04] focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 placeholder-white/20" 
+                    style={{ borderColor: "rgba(255,255,255,0.1)", color: "#fff" }}
+                    placeholder="Describe the cinematic features and structural architectural highlights..."
                   />
                 </div>
 
-                {/* Advanced JSON Spec Editors */}
+                {/* Advanced JSON Spec Editors styled like code IDE */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label style={{ color: t.textSecondary }}>HUD Visual Specifications (JSON Array/Object)</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "rgba(255,255,255,0.6)" : t.textSecondary }}>
+                      HUD Visual Specifications (JSON Array/Object)
+                    </label>
                     <textarea 
                       rows={5} required
                       value={formData.specs}
                       onChange={e => setFormData({...formData, specs: e.target.value})}
-                      className="px-4 py-3 rounded-xl border bg-black/40 text-white outline-none font-mono text-[10px] leading-relaxed" style={{ borderColor: t.borderLight }}
+                      className="px-4 py-3 rounded-xl border bg-black/60 text-emerald-400 outline-none font-mono text-[10px] leading-relaxed transition-all focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 scrollbar-thin" 
+                      style={{ borderColor: "rgba(255,255,255,0.1)" }}
                     />
                   </div>
                   {addType === "laptop" && (
-                    <div className="flex flex-col gap-1.5">
-                      <label style={{ color: t.textSecondary }}>Technical Metadata (JSON Object)</label>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[11px] font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "rgba(255,255,255,0.6)" : t.textSecondary }}>
+                        Technical Metadata (JSON Object)
+                      </label>
                       <textarea 
                         rows={5} required
                         value={formData.technical_metadata}
                         onChange={e => setFormData({...formData, technical_metadata: e.target.value})}
-                        className="px-4 py-3 rounded-xl border bg-black/40 text-white outline-none font-mono text-[10px] leading-relaxed" style={{ borderColor: t.borderLight }}
+                        className="px-4 py-3 rounded-xl border bg-black/60 text-emerald-400 outline-none font-mono text-[10px] leading-relaxed transition-all focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 scrollbar-thin" 
+                        style={{ borderColor: "rgba(255,255,255,0.1)" }}
                       />
                     </div>
                   )}
                 </div>
 
                 {/* Switchable toggles */}
-                <div className="flex gap-6 py-2 border-t border-b" style={{ borderColor: t.borderLight }}>
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-bold" style={{ color: t.text }}>
+                <div className="flex gap-6 py-3 border-t border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+                  <label className="flex items-center gap-2.5 cursor-pointer text-xs font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "#fff" : t.text }}>
                     <input 
                       type="checkbox"
                       checked={formData.is_deal}
                       onChange={e => setFormData({...formData, is_deal: e.target.checked})}
-                      className="rounded text-blue-600 focus:ring-0"
+                      className="rounded bg-black/40 border-white/10 text-cyan-500 focus:ring-0 w-4 h-4 cursor-pointer"
                     />
-                    <span style={{ color: t.textSecondary }}>Mark as Hot Deal</span>
+                    <span>Mark as Hot Deal</span>
                   </label>
 
                   {addType === "hardware" && (
-                    <label className="flex items-center gap-2 cursor-pointer text-xs font-bold" style={{ color: t.text }}>
+                    <label className="flex items-center gap-2.5 cursor-pointer text-xs font-black uppercase tracking-wider" style={{ color: theme === "dark" ? "#fff" : t.text }}>
                       <input 
                         type="checkbox"
                         checked={formData.is_new}
                         onChange={e => setFormData({...formData, is_new: e.target.checked})}
-                        className="rounded text-blue-600 focus:ring-0"
+                        className="rounded bg-black/40 border-white/10 text-cyan-500 focus:ring-0 w-4 h-4 cursor-pointer"
                       />
-                      <span style={{ color: t.textSecondary }}>Mark as Brand New</span>
+                      <span>Mark as Brand New</span>
                     </label>
                   )}
                 </div>
@@ -1106,20 +1160,24 @@ export default function AdminDashboard() {
                   <button
                     type="button"
                     onClick={() => setIsAddModalOpen(false)}
-                    className="px-6 py-3.5 rounded-xl border transition-all hover:bg-white/5"
-                    style={{ borderColor: t.borderLight, color: t.text }}
+                    className="px-6 py-3.5 rounded-xl border transition-all duration-300 hover:bg-white/5 font-black uppercase tracking-widest text-[10px] active:scale-95"
+                    style={{ borderColor: "rgba(255,255,255,0.1)", color: theme === "dark" ? "#fff" : t.text }}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submittingProduct}
-                    className="px-8 py-3.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] flex items-center justify-center gap-2"
-                    style={{ background: t.accentText, color: "#fff" }}
+                    className="px-8 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-lg"
+                    style={{ 
+                      background: t.accentText, 
+                      color: "#fff",
+                      boxShadow: `0 4px 20px ${t.accentText}40`
+                    }}
                   >
                     {submittingProduct ? (
                       <>
-                        <FontAwesomeIcon icon={faSpinner} className="animate-spin" /> Saving To Database...
+                        <FontAwesomeIcon icon={faSpinner} className="animate-spin text-xs" /> Saving To Matrix...
                       </>
                     ) : (
                       "Save & Deploy Product"
