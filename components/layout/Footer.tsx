@@ -102,13 +102,11 @@ export default function Footer() {
       aria-label="Site footer" 
       className="bf relative overflow-hidden transition-colors duration-500" 
       style={{ 
-        // استبدلنا اللون هنا ليطابق الـ Header تماماً في الوضعين الفاتح والداكن
         backgroundColor: isDark ? "rgba(3, 7, 18, 1)" : "#ffffff",
         borderTop: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.06)"
       }}
     >
       
-      {/* نجعل التأثيرات تظهر فقط في الوضع الداكن للحفاظ على بياض ناصع في الوضع الفاتح */}
       {isDark && (
         <>
           {/* Subtle Cyan Tint */}
@@ -135,7 +133,6 @@ export default function Footer() {
 
       <div aria-hidden="true" className="absolute inset-0 w-full h-full pointer-events-none z-0">
         <FooterGridBg />
-        {/* يمكنك تفعيل تأثير الـ Particles فقط للوضع الداكن إذا كان يزعج المظهر الفاتح */}
         <Particles count={isDark ? 20 : 10} />
       </div>
 
@@ -152,8 +149,15 @@ export default function Footer() {
             transition={{ duration: 0.8 }} 
             className="flex flex-col gap-5 md:col-span-2 lg:col-span-1"
           >
-            <a href="/" className="hf inline-flex items-center gap-2.5 w-fit group" aria-label="Home">
+            {/* تم تحديث رابط اللوجو لإضافة نص Recovery trade باللون الأحمر */}
+            <a href="/" className="hf inline-flex items-center gap-3 w-fit group" aria-label="Home">
               <Logo variant="fixed" />
+              <span 
+                className="text-lg font-black tracking-wider uppercase transition-all duration-300 group-hover:opacity-85 select-none"
+                style={{ color: "#ef4444" }}
+              >
+                Recovery trade
+              </span>
             </a>
             <p className="text-[14px] leading-relaxed max-w-md font-medium" style={{ color: t.textSecondary }}>
               Premium laptops & PC components for creators, gamers, and visionaries. Authorized reseller of 20+ leading brands.
