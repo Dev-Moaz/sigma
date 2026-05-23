@@ -142,23 +142,24 @@ export default function CompareClient({ initialLaptops, initialHardware }: Compa
         </CinematicReveal>
 
         {/* Comparison Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-0 border rounded-3xl overflow-hidden backdrop-blur-md" style={{ borderColor: t.borderLight, background: t.cardBg }}>
-          
-          {/* Labels Column */}
-          <div className="hidden lg:flex flex-col border-r" style={{ borderColor: t.borderLight }}>
-            <div className="h-80 border-b flex items-center px-6" style={{ borderColor: t.borderLight }}>
-              <span className="hf text-xs font-black uppercase tracking-widest opacity-30" style={{ color: t.textSecondary }}>Parameter</span>
-            </div>
-            {specKeys.map((spec) => (
-              <div key={spec.label} className="h-20 border-b flex items-center px-6" style={{ borderColor: t.borderLight }}>
-                <span className="pc-dm text-xs font-black uppercase tracking-wider" style={{ color: t.textSecondary }}>{spec.label}</span>
+        <div className="w-full overflow-x-auto pb-4 scrollbar-thin">
+          <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-0 border rounded-3xl overflow-hidden backdrop-blur-md min-w-[750px] lg:min-w-0" style={{ borderColor: t.borderLight, background: t.cardBg }}>
+            
+            {/* Labels Column */}
+            <div className="hidden lg:flex flex-col border-r" style={{ borderColor: t.borderLight }}>
+              <div className="h-80 border-b flex items-center px-6" style={{ borderColor: t.borderLight }}>
+                <span className="hf text-xs font-black uppercase tracking-widest opacity-30" style={{ color: t.textSecondary }}>Parameter</span>
               </div>
-            ))}
-            <div className="flex-1 min-h-[100px]" />
-          </div>
+              {specKeys.map((spec) => (
+                <div key={spec.label} className="h-20 border-b flex items-center px-6" style={{ borderColor: t.borderLight }}>
+                  <span className="pc-dm text-xs font-black uppercase tracking-wider" style={{ color: t.textSecondary }}>{spec.label}</span>
+                </div>
+              ))}
+              <div className="flex-1 min-h-[100px]" />
+            </div>
 
-          {/* Products Grid */}
-          <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-${products.length} h-full`}>
+            {/* Products Grid */}
+            <div className={`grid grid-cols-${products.length} h-full`}>
             {products.map((product) => (
               <div key={product.id} className="flex flex-col border-r last:border-r-0" style={{ borderColor: t.borderLight }}>
                 
@@ -215,6 +216,7 @@ export default function CompareClient({ initialLaptops, initialHardware }: Compa
             ))}
           </div>
         </div>
+      </div>
 
         {/* Comparison Summary / Insights */}
         <div className="mt-12 p-8 rounded-3xl border border-dashed flex flex-col md:flex-row items-center gap-8" style={{ borderColor: t.borderLight }}>

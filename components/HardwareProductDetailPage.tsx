@@ -95,7 +95,7 @@ Box3D.displayName = "Box3D";
    ========================================================================================= */
 
 const VisualRayTracing = ({ color }: { color: string }) => (
-  <div className="relative w-[300px] h-[300px] preserve-3d scene-perspective flex items-center justify-center">
+  <div className="relative w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] preserve-3d scene-perspective flex items-center justify-center">
     <Box3D w={60} h={60} d={60} matFront="mat-glass" matBack="mat-glass" matTop="mat-glass" matBottom="mat-glass" matLeft="mat-glass" matRight="mat-glass" style={{ transform: 'rotateX(45deg) rotateY(45deg)' }}>
        <div className="absolute inset-0 flex items-center justify-center" style={{ transform: 'translateZ(30px)' }}>
           <div className="w-4 h-4 rounded-full" style={{ background: color, boxShadow: `0 0 30px ${color}, 0 0 60px ${color}` }} />
@@ -111,7 +111,7 @@ const VisualRayTracing = ({ color }: { color: string }) => (
 );
 
 const VisualTensorCores = ({ color }: { color: string }) => (
-  <div className="relative w-[280px] h-[280px] grid grid-cols-4 grid-rows-4 gap-3 p-4 mat-pcb-black border border-white/10 rounded-xl preserve-3d" style={{ transform: 'rotateX(30deg) rotateZ(15deg)' }}>
+  <div className="relative w-[230px] h-[230px] sm:w-[280px] sm:h-[280px] grid grid-cols-4 grid-rows-4 gap-2 sm:gap-3 p-3 sm:p-4 mat-pcb-black border border-white/10 rounded-xl preserve-3d" style={{ transform: 'rotateX(30deg) rotateZ(15deg)' }}>
     {Array.from({length: 16}).map((_, i) => (
       <motion.div key={i} className="relative rounded-sm border border-[#333] bg-[#111] overflow-hidden"
         animate={{ borderColor: ['#333', color, '#333'], boxShadow: ['none', `0 0 15px ${color}`, 'none'] }}
@@ -124,7 +124,7 @@ const VisualTensorCores = ({ color }: { color: string }) => (
 );
 
 const VisualDataLanes = ({ color }: { color: string }) => (
-  <div className="relative w-[300px] h-[300px] flex flex-col justify-evenly preserve-3d" style={{ perspective: "1000px", transform: 'rotateX(60deg)' }}>
+  <div className="relative w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] flex flex-col justify-evenly preserve-3d" style={{ perspective: "1000px", transform: 'rotateX(60deg)' }}>
     {[...Array(8)].map((_, i) => (
       <div key={i} className="w-full h-2 bg-[#111] rounded-full relative overflow-hidden border border-white/5">
         <motion.div className="absolute inset-y-0 w-1/3 rounded-full" style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
@@ -380,7 +380,7 @@ export default function HardwareProductDetailPage({ product }: { product: Hardwa
 
               <div className="w-full lg:w-1/2 flex justify-center perspective-[2000px]">
                  <motion.div initial={{ rotateY: isReversed ? 40 : -40, opacity: 0, scale: 0.8, x: isReversed ? -100 : 100 }} whileInView={{ rotateY: 0, opacity: 1, scale: 1, x: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }} className="gpu-layer preserve-3d">
-                   <div className="p-8 rounded-3xl bg-[#0a0a0a] border border-[#222] shadow-2xl">
+                   <div className="p-4 sm:p-8 rounded-3xl bg-[#0a0a0a] border border-[#222] shadow-2xl">
                      {chap.visual}
                    </div>
                  </motion.div>

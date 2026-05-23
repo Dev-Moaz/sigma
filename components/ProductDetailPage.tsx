@@ -19,7 +19,6 @@ import {
   faDisplay,
   faShieldHalved,
   faBolt,
-  faBatteryFull,
   faCheck,
   faMemory,
   faHardDrive,
@@ -416,7 +415,7 @@ function RamVisual({ accentColor, ramAmount }: { accentColor: string, ramAmount:
       <div className="absolute w-[60%] h-[40%] rounded-full blur-[100px] opacity-20 pointer-events-none" style={{ background: accentColor }} />
 
       <motion.div animate={{ y: [-8, 8, -8] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} className="pointer-events-none">
-        <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative w-[340px] sm:w-[420px] h-[100px] sm:h-[120px]">
+        <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative w-[85vw] max-w-[340px] sm:w-[420px] sm:max-w-none h-[100px] sm:h-[120px]">
           
           <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[80%] h-10 bg-black/60 blur-xl rounded-[100%]" style={{ transform: "translateZ(-20px)" }} />
 
@@ -486,7 +485,7 @@ function StorageVisual({ accentColor, storageName }: { accentColor: string, stor
       <div className="absolute w-[60%] h-[40%] rounded-full blur-[120px] opacity-20 pointer-events-none" style={{ background: accentColor }} />
 
       <motion.div animate={{ y: [-5, 5, -5] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} className="pointer-events-none">
-        <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative w-[360px] sm:w-[440px] h-[85px] sm:h-[100px]">
+        <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative w-[85vw] max-w-[360px] sm:w-[440px] sm:max-w-none h-[85px] sm:h-[100px]">
           
           <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-[85%] h-10 bg-black/60 blur-xl rounded-[100%]" style={{ transform: "translateZ(-20px)" }} />
 
@@ -606,7 +605,7 @@ function GpuVisual({ accentColor }: { accentColor: string }) {
       <div className="absolute w-[80%] h-[60%] rounded-full blur-[120px] opacity-20 pointer-events-none transition-colors duration-700" style={{ background: accentColor }} />
 
       <motion.div style={{ x: holoShiftX, y: holoShiftY, rotateX, rotateY, transformStyle: "preserve-3d" }} className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
-         <div className="relative w-[360px] sm:w-[420px] h-[180px] sm:h-[200px]" style={{ transform: "translateZ(120px)" }}>
+         <div className="relative w-[80vw] max-w-[360px] sm:w-[420px] sm:max-w-none h-[180px] sm:h-[200px]" style={{ transform: "translateZ(120px)" }}>
             <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 opacity-50" style={{ borderColor: accentColor }} />
             <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 opacity-50" style={{ borderColor: accentColor }} />
             <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 opacity-50" style={{ borderColor: accentColor }} />
@@ -617,7 +616,7 @@ function GpuVisual({ accentColor }: { accentColor: string }) {
       </motion.div>
 
       <motion.div animate={{ y: [-15, 15, -15] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} className="pointer-events-none">
-        <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative w-[300px] sm:w-[360px] h-[130px] sm:h-[150px]">
+        <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative w-[75vw] max-w-[300px] sm:w-[360px] sm:max-w-none h-[130px] sm:h-[150px]">
           
           <div className="absolute -left-5 top-2 w-5 h-[110%] bg-gradient-to-r from-gray-400 to-gray-500 rounded-l-md shadow-2xl border-l-2 border-gray-300 flex flex-col justify-between py-4 items-center" style={{ transform: "translateZ(10px) rotateY(-10deg)", transformOrigin: "right" }}>
             <div className="w-full flex flex-col gap-1 px-1">
@@ -735,7 +734,7 @@ function DisplayVisual({ accentColor }: { accentColor: string }) {
 
       <motion.div animate={{ y: [-10, 10, -10] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} className="pointer-events-none z-10">
          
-         <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative w-[340px] sm:w-[440px] h-[212px] sm:h-[275px]">
+         <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative w-[80vw] max-w-[340px] sm:w-[440px] sm:max-w-none h-[212px] sm:h-[275px]">
            
            <div className="absolute inset-0 rounded-2xl shadow-[0_40px_80px_rgba(0,0,0,0.5)] border border-[#ffffff15] overflow-hidden backdrop-blur-md" style={{ background: `linear-gradient(135deg, rgba(20,20,20,0.4), rgba(5,5,5,0.2))`, transform: "translateZ(0px)" }}>
               <div className="absolute inset-[3px] rounded-[14px] border border-black/40 shadow-inner" />
@@ -800,129 +799,7 @@ function DisplayVisual({ accentColor }: { accentColor: string }) {
   );
 }
 
-function BatteryVisual({ accentColor }: { accentColor: string }) {
-  const { t } = useTheme();
-  const ref = useRef<HTMLDivElement>(null);
-  
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  
-  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [22, -22]), { stiffness: 100, damping: 30 });
-  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-30, 30]), { stiffness: 100, damping: 30 });
 
-  const glareX = useTransform(mouseX, [-0.5, 0.5], ["200%", "-200%"]);
-  
-  const layer1X = useTransform(mouseX, [-0.5, 0.5], [10, -10]);
-  const layer1Y = useTransform(mouseY, [-0.5, 0.5], [10, -10]);
-  const layer2X = useTransform(mouseX, [-0.5, 0.5], [25, -25]);
-  const layer2Y = useTransform(mouseY, [-0.5, 0.5], [25, -25]);
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
-    mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
-  };
-  const handleMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
-
-  return (
-    <div ref={ref} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative w-full h-full min-h-[420px] flex items-center justify-center cursor-crosshair" style={{ perspective: "1800px" }}>
-      
-      <div className="absolute w-[60%] h-[50%] rounded-full blur-[100px] opacity-20 pointer-events-none" style={{ background: accentColor }} />
-
-      <motion.div animate={{ y: [-12, 12, -12] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} className="pointer-events-none">
-        <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative w-[340px] sm:w-[420px] h-[160px] sm:h-[190px]">
-          
-          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-[90%] h-16 bg-black/70 blur-2xl rounded-[100%]" style={{ transform: "translateZ(-40px)" }} />
-
-          <div className="absolute inset-x-2 inset-y-0 rounded-xl bg-[#0f0f0f] border border-[#222] shadow-[0_20px_40px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col justify-between p-2" style={{ transform: "translateZ(-15px)" }}>
-             <div className="absolute inset-0 opacity-40" style={{ backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 10px, #1a1a1a 10px, #1a1a1a 12px)" }} />
-             {[...Array(4)].map((_, i) => (
-                <div key={`screw-${i}`} className={`absolute w-3 h-3 rounded-full border border-[#333] bg-[#050505] flex items-center justify-center shadow-inner ${i===0?'top-2 left-2':i===1?'top-2 right-2':i===2?'bottom-2 left-2':'bottom-2 right-2'}`}>
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#111]" />
-                </div>
-             ))}
-          </div>
-
-          <div className="absolute inset-0 p-4 flex gap-3 z-10" style={{ transform: "translateZ(5px)" }}>
-            {[...Array(3)].map((_, i) => (
-              <div key={`cell-${i}`} className="flex-1 relative rounded-lg border border-[#333] overflow-hidden shadow-inner flex flex-col justify-center bg-[#050505]">
-                <svg width="100%" height="100%" className="absolute inset-0 opacity-20">
-                  <pattern id={`hex-${i}`} width="14" height="24" patternUnits="userSpaceOnUse" patternTransform="scale(0.5)">
-                    <path d="M7 0L14 4V12L7 16L0 12V4L7 0Z" fill="none" stroke={accentColor} strokeWidth="1" />
-                  </pattern>
-                  <rect width="100%" height="100%" fill={`url(#hex-${i})`} />
-                </svg>
-                <div className="absolute inset-x-0 bottom-0 top-1/4 rounded-t-sm opacity-80 mix-blend-screen" style={{ background: `linear-gradient(0deg, ${accentColor} 0%, transparent 100%)` }} />
-                <motion.div 
-                  className="absolute inset-0 opacity-60"
-                  style={{ background: `repeating-linear-gradient(180deg, transparent, transparent 4px, ${accentColor} 4px, ${accentColor} 5px)` }}
-                  animate={{ backgroundPosition: ["0px 0px", "0px -40px"] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                />
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-white/20 rounded-full" />
-                <div className="absolute bottom-2 left-2 pdp-mono text-[6px] text-white/50 tracking-widest bg-black/40 px-1 rounded-sm">
-                  BANK_0{i+1}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <motion.div className="absolute top-1/2 -left-3 -translate-y-1/2 w-10 h-16 bg-[#111] border border-[#444] rounded-sm shadow-xl flex flex-col items-center justify-center gap-1 z-20" style={{ transform: "translateZ(15px)", x: layer1X, y: layer1Y }}>
-             <div className="w-6 h-6 bg-[#0a0a0a] border border-[#333] rounded-sm flex flex-wrap gap-[1px] p-[2px]">
-               {[...Array(9)].map((_, i) => <div key={i} className="w-[calc(33.33%-1px)] h-[calc(33.33%-1px)] bg-[#222]" />)}
-             </div>
-             <div className="pdp-mono text-[5px] text-white/40 tracking-widest mt-1">BMS.AI</div>
-             <motion.div className="w-1.5 h-1.5 rounded-full mt-1" style={{ background: accentColor, boxShadow: `0 0 8px ${accentColor}` }} animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 2, repeat: Infinity }} />
-          </motion.div>
-
-          <motion.div className="absolute -inset-2 rounded-xl backdrop-blur-sm border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] overflow-hidden z-30 pointer-events-none" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.2) 100%)", transform: "translateZ(30px)", x: layer2X, y: layer2Y }}>
-            <motion.div className="absolute inset-0 mix-blend-overlay opacity-60" style={{ background: "linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.6) 45%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.6) 55%, transparent 70%)", x: glareX }} />
-            <motion.div className="absolute top-0 bottom-0 w-[2px] opacity-50 shadow-[0_0_15px_currentColor]" style={{ background: accentColor, color: accentColor }} animate={{ left: ["-10%", "110%", "-10%"] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} />
-            <div className="absolute inset-4 flex flex-col justify-between">
-               <div className="flex justify-between items-start">
-                 <div>
-                   <div className="pdp-display text-white font-black text-3xl sm:text-4xl leading-none tracking-tighter" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>
-                     99.9<span className="text-sm sm:text-lg text-white/70">Wh</span>
-                   </div>
-                   <div className="pdp-mono text-[7px] sm:text-[9px] text-white/60 tracking-[0.3em] mt-1 drop-shadow-md">
-                     SOLID-STATE GRAPHENE
-                   </div>
-                 </div>
-                 
-                 <div className="flex flex-col items-end">
-                   <div className="flex items-center gap-1.5 px-2 py-1 rounded-sm border backdrop-blur-md" style={{ borderColor: `${accentColor}40`, background: `${accentColor}10` }}>
-                     <FontAwesomeIcon icon={faCheck} style={{ color: accentColor, fontSize: "8px" }} />
-                     <span className="pdp-mono text-[7px] text-white tracking-widest">TSA APPROVED</span>
-                   </div>
-                   <div className="pdp-mono text-[8px] sm:text-[10px] text-white/40 tracking-[0.2em] mt-2">
-                     CAPACITY: <span className="text-white">8600mAh</span>
-                   </div>
-                 </div>
-               </div>
-
-               <div className="flex justify-between items-end w-full">
-                 <div className="w-8 h-8 border-l-2 border-b-2 opacity-50" style={{ borderColor: accentColor }} />
-                 <div className="flex flex-col items-center">
-                    <div className="flex gap-1 mb-1">
-                      {[...Array(5)].map((_, i) => (
-                        <div key={i} className="w-4 h-1 rounded-full bg-white/20 overflow-hidden relative">
-                          <motion.div className="absolute inset-y-0 left-0 w-full" style={{ background: accentColor }} animate={i===4 ? { x: ["-100%", "0%"] } : {}} transition={i===4 ? { duration: 1.5, repeat: Infinity } : {}} />
-                        </div>
-                      ))}
-                    </div>
-                    <div className="pdp-mono text-[6px] tracking-[0.4em] text-white/50">FAST CHARGE 0-50% 35M</div>
-                 </div>
-                 <div className="w-8 h-8 border-r-2 border-b-2 opacity-50" style={{ borderColor: accentColor }} />
-               </div>
-            </div>
-          </motion.div>
-
-        </motion.div>
-      </motion.div>
-    </div>
-  );
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CHAPTER COMPONENTS
@@ -1406,25 +1283,9 @@ export default function ProductDetailPage({ product }: { product: Product }) {
       />
       <ChapterDivider accentColor={C.blue} />
 
-      {/* Chapter 5 — Battery */}
+      {/* Chapter 5 — GPU */}
       <Chapter
         index={4}
-        stat={batteryHours}
-        statSuffix="hr"
-        label="Endurance"
-        headline={batteryContent.headline}
-        body={batteryContent.body}
-        accentColor={C.amber}
-        icon={faBatteryFull}
-        supportLines={batteryContent.supportLines}
-        visualNode={<BatteryVisual accentColor={C.amber} />}
-        flip={false}
-      />
-      <ChapterDivider accentColor={C.amber} />
-
-      {/* Chapter 6 — GPU */}
-      <Chapter
-        index={5}
         stat={gpuVramNum}
         statSuffix="GB"
         label="Graphics Power"
