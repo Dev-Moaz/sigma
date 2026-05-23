@@ -2591,7 +2591,6 @@ export default function AdminDashboard() {
   const [updatingOrderStatusId, setUpdatingOrderStatusId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<{ id: string; type: "success" | "error" | "info"; message: string }[]>([]);
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; onConfirm: () => void } | null>(null);
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
   const [ordersPage, setOrdersPage] = useState(1);
   const [inventoryPage, setInventoryPage] = useState(1);
@@ -2661,7 +2660,7 @@ export default function AdminDashboard() {
         setIsColorsValid(true);
       } else {
         JSON.parse(formData.color_variants);
-        setIsColorsValid(false);
+        setIsColorsValid(true);
       }
     } catch {
       setIsColorsValid(false);
@@ -2669,16 +2668,6 @@ export default function AdminDashboard() {
   }, [formData.color_variants, addType]);
 
   const isFormJsonValid = isSpecsValid && isMetadataValid && isColorsValid;
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (openDropdownId && !(e.target as Element).closest(".status-dropdown-container")) {
-        setOpenDropdownId(null);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [openDropdownId]);
 
   useEffect(() => {
     setOrdersPage(1);
@@ -3395,31 +3384,19 @@ export default function AdminDashboard() {
                                 </button>
                                 
                                 <div className="relative status-dropdown-container overflow-visible">
-                                  <button 
-                                    onClick={() => setOpenDropdownId(openDropdownId === order.id ? null : order.id)}
-                                    className="px-3 py-1.5 rounded-lg border font-bold flex items-center gap-1.5 transition-all text-[10px] uppercase"
+                                  {/* استبدال الـ Dropdown اليدوي الذي كان يُقص بالـ Styled Native Select الحصين والمقاوم تماماً للقص */}
+                                  <select
+                                    value={order.status}
+                                    onChange={e => handleUpdateOrderStatus(order.id, e.target.value)}
+                                    className="px-3 py-1.5 rounded-lg border font-bold text-[10px] uppercase outline-none cursor-pointer bg-transparent transition-all"
                                     style={{ borderColor: t.borderLight, color: t.textSecondary }}
                                   >
-                                    Status <FontAwesomeIcon icon={faChevronDown} className="text-[8px]" />
-                                  </button>
-                                  
-                                  {/* القائمة المنسدلة تفتح لأعلى (bottom-full) لتجنب القص والـ scrollbar المشوه */}
-                                  <div className={`absolute right-0 bottom-full mb-1.5 w-32 rounded-xl border shadow-xl z-50 ${openDropdownId === order.id ? "block" : "hidden"}`} 
-                                       style={{ background: t.dropdownBg, color: t.dropdownText, borderColor: t.borderLight }}>
                                     {["pending", "processing", "shipped", "delivered", "cancelled"].map(st => (
-                                      <button
-                                        key={st}
-                                        onClick={() => {
-                                          handleUpdateOrderStatus(order.id, st);
-                                          setOpenDropdownId(null);
-                                        }}
-                                        className="w-full text-left px-3 py-2 text-[10px] font-bold uppercase transition-colors hover:bg-black/5"
-                                        style={{ color: order.status === st ? t.accentText : t.dropdownText }}
-                                      >
+                                      <option key={st} value={st} className="bg-neutral-900 text-white font-semibold uppercase text-[10px]">
                                         {st}
-                                      </button>
+                                      </option>
                                     ))}
-                                  </div>
+                                  </select>
                                 </div>
                               </td>
                             </tr>
@@ -3667,7 +3644,7 @@ export default function AdminDashboard() {
               exit={{ scale: 0.95 }} 
               className="max-w-2xl w-full rounded-3xl border p-6 backdrop-blur-xl flex flex-col gap-6" 
               style={{ 
-                // جعل الخلفية صلبة وواضحة جداً لحل مشكلة اللون الرمادي المتداخل بالثيم الفاتح
+                // جعل الخلفية صلبة وواضحة جداً بنسبة 0.98 لإنهاء مشكلة تداخل لون الـ Backdrop الرمادي تماماً
                 background: isDark ? "rgba(20, 20, 20, 0.98)" : "rgba(255, 255, 255, 0.98)", 
                 borderColor: t.borderLight 
               }}
@@ -3697,7 +3674,7 @@ export default function AdminDashboard() {
                     <select 
                       value={selectedOrder.status}
                       onChange={e => handleUpdateOrderStatus(selectedOrder.id, e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border text-xs font-bold uppercase outline-none bg-black/40 text-white"
+                      className="w-full px-3 py-2 rounded-lg border text-xs font-bold uppercase outline-none bg-black/40 text-white font-semibold"
                       style={{ borderColor: t.borderLight }}
                     >
                       {["pending", "processing", "shipped", "delivered", "cancelled"].map(status => (
