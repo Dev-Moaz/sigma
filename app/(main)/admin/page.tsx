@@ -20,7 +20,9 @@ import {
   faUsers,
   faEye,
   faChevronDown,
-  faPlus
+  faPlus,
+  faChevronLeft,
+  faChevronRight
 } from "@fortawesome/free-solid-svg-icons";
 import { useTheme } from "@/store/useAppStore";
 import Link from "next/link";
@@ -35,23 +37,21 @@ import {
   updateProductAction,
   deleteProductAction
 } from "@/app/actions/admin";
-
-// Cinematic Reveal Wrapper
-function CinematicReveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-50px 0px" });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
-      animate={inView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
-      transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
-    >
-      {children}
-    </motion.div>
-  );
-}
+import { CinematicReveal } from "@/components/ui/CinematicReveal";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Cell,
+  PieChart,
+  Pie
+} from "recharts";
 
 const METADATA_FIELDS_INFO = [
   { key: "cpu", label: "CPU Model", type: "text", placeholder: "e.g. Intel Core i7-13700H" },
@@ -131,6 +131,62 @@ const HARDWARE_SCHEMAS: Record<string, Array<{ key: string; label: string; type:
   ]
 };
 
+const DEFAULT_LAPTOP_FORM = {
+  name: "",
+  brand: "",
+  tagline: "Experience peak gaming performance.",
+  price: 1500,
+  original_price: 1800,
+  discount_price: 0,
+  category: "Gaming",
+  sub_category: "rtx-40-series",
+  stock: 10,
+  images: "",
+  description: "",
+  badge: "none",
+  is_deal: false,
+  is_new: false,
+  specs: JSON.stringify([
+    { "label": "CPU", "value": "Intel Core i7-13700H", "color": "cyan" },
+    { "label": "GPU", "value": "NVIDIA RTX 4060", "color": "green" },
+    { "label": "RAM", "value": "16GB DDR5", "color": "blue" }
+  ], null, 2),
+  technical_metadata: JSON.stringify({
+    "cpu_brand": "intel",
+    "gpu_brand": "nvidia",
+    "ram_gb": 16,
+    "storage_gb": 512
+  }, null, 2),
+  color_variants: JSON.stringify([
+    { "name": "Midnight Black", "hex": "#0a0a0a" }
+  ], null, 2)
+};
+
+const DEFAULT_HARDWARE_FORM = {
+  name: "",
+  brand: "",
+  tagline: "",
+  price: 350,
+  original_price: 0,
+  discount_price: 300,
+  category: "CPU",
+  sub_category: "",
+  stock: 15,
+  images: "",
+  description: "",
+  badge: "none",
+  is_deal: false,
+  is_new: true,
+  specs: JSON.stringify({
+    "socket": "AM5",
+    "cores": "8 Cores",
+    "threads": "16 Threads",
+    "baseClock": "3.8 GHz"
+  }, null, 2),
+  technical_metadata: "",
+  color_variants: "[]"
+};
+
 export default function AdminDashboard() {
   const { t, isDark, toggleTheme } = useTheme();
   const router = useRouter();
@@ -156,6 +212,25 @@ export default function AdminDashboard() {
   const [savingStock, setSavingStock] = useState(false);
   const [updatingOrderStatusId, setUpdatingOrderStatusId] = useState<string | null>(null);
   
+  // Custom Toast System State
+  const [toasts, setToasts] = useState<{ id: string; type: "success" | "error" | "info"; message: string }[]>([]);
+  
+  // Custom Confirmation Modal State
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
+
+  // Dropdown States
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+
+  // Pagination states (20 items per page)
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [inventoryPage, setInventoryPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
+
   // Search / Filter
   const [orderSearchQuery, setOrderSearchQuery] = useState("");
   const [inventorySearchQuery, setInventorySearchQuery] = useState("");
@@ -164,25 +239,16 @@ export default function AdminDashboard() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addType, setAddType] = useState<"laptop" | "hardware">("laptop");
   const [submittingProduct, setSubmittingProduct] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    brand: "",
-    tagline: "",
-    price: 0,
-    original_price: 0,
-    discount_price: 0,
-    category: "",
-    sub_category: "",
-    stock: 10,
-    images: "",
-    description: "",
-    badge: "none",
-    is_deal: false,
-    is_new: false,
-    specs: "",
-    technical_metadata: "",
-    color_variants: "[]"
-  });
+  const [formData, setFormData] = useState<any>(DEFAULT_LAPTOP_FORM);
+
+  // Show Toast Helper
+  const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
+    const id = Math.random().toString(36).substring(2);
+    setToasts(prev => [...prev, { id, type, message }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 4000);
+  };
 
   // JSON Validation States
   const [isSpecsValid, setIsSpecsValid] = useState(true);
@@ -238,6 +304,26 @@ export default function AdminDashboard() {
 
   const isFormJsonValid = isSpecsValid && isMetadataValid && isColorsValid;
 
+  // Close active dropdowns on click outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (openDropdownId && !(e.target as Element).closest(".status-dropdown-container")) {
+        setOpenDropdownId(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openDropdownId]);
+
+  // Reset pages on search query or inventory type toggles
+  useEffect(() => {
+    setOrdersPage(1);
+  }, [orderSearchQuery]);
+
+  useEffect(() => {
+    setInventoryPage(1);
+  }, [inventorySearchQuery, inventoryType]);
+
   // Visual Builder State Helpers
   const getParsedSpecs = () => {
     try {
@@ -249,7 +335,7 @@ export default function AdminDashboard() {
   };
 
   const updateParsedSpecs = (newSpecs: any[]) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       specs: JSON.stringify(newSpecs, null, 2)
     }));
@@ -265,7 +351,7 @@ export default function AdminDashboard() {
   };
 
   const updateParsedMetadata = (newMetadata: any) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       technical_metadata: JSON.stringify(newMetadata, null, 2)
     }));
@@ -281,7 +367,7 @@ export default function AdminDashboard() {
   };
 
   const updateParsedHardwareSpecs = (newSpecs: any) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       specs: JSON.stringify(newSpecs, null, 2)
     }));
@@ -333,64 +419,13 @@ export default function AdminDashboard() {
 
   // 3. Auto-populate Form Defaults on Switch Type
   useEffect(() => {
+    if (editingProductId !== null) return;
     if (addType === "laptop") {
-      setFormData({
-        name: "",
-        brand: "",
-        tagline: "Experience peak gaming performance.",
-        price: 1500,
-        original_price: 1800,
-        discount_price: 0,
-        category: "Gaming",
-        sub_category: "rtx-40-series",
-        stock: 10,
-        images: "",
-        description: "",
-        badge: "none",
-        is_deal: false,
-        is_new: false,
-        specs: JSON.stringify([
-          { "label": "CPU", "value": "Intel Core i7-13700H", "color": "cyan" },
-          { "label": "GPU", "value": "NVIDIA RTX 4060", "color": "green" },
-          { "label": "RAM", "value": "16GB DDR5", "color": "blue" }
-        ], null, 2),
-        technical_metadata: JSON.stringify({
-          "cpu_brand": "intel",
-          "gpu_brand": "nvidia",
-          "ram_gb": 16,
-          "storage_gb": 512
-        }, null, 2),
-        color_variants: JSON.stringify([
-          { "name": "Midnight Black", "hex": "#0a0a0a" }
-        ], null, 2)
-      });
+      setFormData(DEFAULT_LAPTOP_FORM);
     } else {
-      setFormData({
-        name: "",
-        brand: "",
-        tagline: "",
-        price: 350,
-        original_price: 0,
-        discount_price: 300,
-        category: "CPU",
-        sub_category: "",
-        stock: 15,
-        images: "",
-        description: "",
-        badge: "none",
-        is_deal: false,
-        is_new: true,
-        specs: JSON.stringify({
-          "socket": "AM5",
-          "cores": "8 Cores",
-          "threads": "16 Threads",
-          "baseClock": "3.8 GHz"
-        }, null, 2),
-        technical_metadata: "",
-        color_variants: "[]"
-      });
+      setFormData(DEFAULT_HARDWARE_FORM);
     }
-  }, [addType]);
+  }, [addType, editingProductId]);
 
   // Actions
   const handleUpdateOrderStatus = async (orderId: string, nextStatus: string) => {
@@ -402,11 +437,12 @@ export default function AdminDashboard() {
         if (selectedOrder?.id === orderId) {
           setSelectedOrder((prev: any) => prev ? { ...prev, status: nextStatus } : null);
         }
+        showToast("Fulfillment status synced successfully.", "success");
       } else {
-        alert(res.error || "Failed to update status.");
+        showToast(res.error || "Failed to update order status.", "error");
       }
     } catch (err) {
-      alert("Network error.");
+      showToast("Network protocol failure during status sync.", "error");
     } finally {
       setUpdatingOrderStatusId(null);
     }
@@ -423,33 +459,41 @@ export default function AdminDashboard() {
           setHardware(prev => prev.map(p => p.id === id ? { ...p, stock: newStock } : p));
         }
         setEditingStockId(null);
+        showToast("Fulfillment stock units successfully updated.", "success");
       } else {
-        alert(res.error || "Failed to update stock.");
+        showToast(res.error || "Failed to update stock matrix.", "error");
       }
     } catch (err) {
-      alert("Network error.");
+      showToast("Stock modification network error.", "error");
     } finally {
       setSavingStock(false);
     }
   };
 
-  const handleDeleteProduct = async (id: string, type: "laptop" | "hardware") => {
-    if (!confirm("Are you sure you want to permanently delete this product? This action cannot be undone.")) return;
-    try {
-      const res = await deleteProductAction(id, type);
-      if (res.success) {
-        alert("Product deleted successfully!");
-        if (type === "laptop") {
-          setLaptops(prev => prev.filter(p => p.id !== id));
-        } else {
-          setHardware(prev => prev.filter(p => p.id !== id));
+  const handleDeleteProduct = (id: string, type: "laptop" | "hardware") => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Decommission Product Matrix",
+      message: "Are you sure you want to permanently decommission this product from live database nodes? This operation is irreversible.",
+      onConfirm: async () => {
+        setConfirmModal(null);
+        try {
+          const res = await deleteProductAction(id, type);
+          if (res.success) {
+            showToast("Product successfully purged from mainframe.", "success");
+            if (type === "laptop") {
+              setLaptops(prev => prev.filter(p => p.id !== id));
+            } else {
+              setHardware(prev => prev.filter(p => p.id !== id));
+            }
+          } else {
+            showToast(res.error || "Decommission protocol failed.", "error");
+          }
+        } catch (err) {
+          showToast("Network disconnection halted purge protocol.", "error");
         }
-      } else {
-        alert(res.error || "Failed to delete product.");
       }
-    } catch (err) {
-      alert("Failed to delete product due to network error.");
-    }
+    });
   };
 
   const handleStartEditProduct = (item: any, type: "laptop" | "hardware") => {
@@ -488,7 +532,7 @@ export default function AdminDashboard() {
   const handleAddProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormJsonValid) {
-      alert("Please fix the JSON format errors before saving.");
+      showToast("Please resolve JSON schema validation errors first.", "error");
       return;
     }
     setSubmittingProduct(true);
@@ -522,7 +566,7 @@ export default function AdminDashboard() {
         // Update Flow
         const res = await updateProductAction(editingProductId, addType, payload);
         if (res.success && res.data) {
-          alert("Product updated successfully!");
+          showToast("Product structural metadata updated successfully.", "success");
           if (addType === "laptop") {
             setLaptops(prev => prev.map(p => p.id === editingProductId ? res.data : p));
           } else {
@@ -531,13 +575,13 @@ export default function AdminDashboard() {
           setIsAddModalOpen(false);
           setEditingProductId(null);
         } else {
-          alert(res.error || "Failed to update product.");
+          showToast(res.error || "Failed to update product node.", "error");
         }
       } else {
         // Add Flow
         const res = await addNewProductAction(addType, payload);
         if (res.success && res.data) {
-          alert("Product added successfully!");
+          showToast("New product successfully cataloged to cloud matrix.", "success");
           if (addType === "laptop") {
             setLaptops(prev => [res.data, ...prev]);
           } else {
@@ -545,11 +589,11 @@ export default function AdminDashboard() {
           }
           setIsAddModalOpen(false);
         } else {
-          alert(res.error || "Failed to add product.");
+          showToast(res.error || "Failed to catalog new product.", "error");
         }
       }
     } catch (err) {
-      alert("Submission error.");
+      showToast("Fatal error during submission sequence.", "error");
     } finally {
       setSubmittingProduct(false);
     }
@@ -563,6 +607,44 @@ export default function AdminDashboard() {
   const activeUsersCount = Array.from(new Set(orders.map(o => o.customer_email))).length;
 
   const lowStockItemsCount = [...laptops, ...hardware].filter(item => item.stock < 5).length;
+
+  // Real-time chronological sales aggregation for AreaChart
+  const getSalesTimelineData = () => {
+    const dailyMap: { [date: string]: { date: string; revenue: number; ordersCount: number } } = {};
+    const sortedOrders = [...orders].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    
+    sortedOrders.forEach(o => {
+      const dateStr = new Date(o.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      const amount = (o.status.toLowerCase() === "delivered" || o.status.toLowerCase() === "processing" || o.status.toLowerCase() === "shipped") ? o.total_amount : 0;
+      
+      if (dailyMap[dateStr]) {
+        dailyMap[dateStr].revenue += amount;
+        dailyMap[dateStr].ordersCount += 1;
+      } else {
+        dailyMap[dateStr] = {
+          date: dateStr,
+          revenue: amount,
+          ordersCount: 1
+        };
+      }
+    });
+    
+    const res = Object.values(dailyMap);
+    return res.length > 0 ? res.slice(-7) : [
+      { date: "Sync Node A", revenue: 1200, ordersCount: 1 },
+      { date: "Sync Node B", revenue: 2500, ordersCount: 2 },
+      { date: "Sync Node C", revenue: 1900, ordersCount: 1 },
+      { date: "Sync Node D", revenue: 3400, ordersCount: 3 }
+    ];
+  };
+
+  // Real-time composition data for Catalog Composition
+  const getStockCompositionData = () => {
+    return [
+      { name: "Laptops", count: laptops.length },
+      { name: "Hardware", count: hardware.length }
+    ];
+  };
 
   // Input Field Styles Generator
   const getFieldStyle = () => ({
@@ -719,6 +801,70 @@ export default function AdminDashboard() {
                 ))}
               </div>
 
+              {/* Dynamic Revenue Trend Area Chart */}
+              <div className="md:col-span-2 p-6 rounded-2xl border backdrop-blur-md flex flex-col min-h-[320px]" style={{ background: t.cardBg, borderColor: t.borderLight }}>
+                <div className="mb-4">
+                  <h3 className="hf text-sm font-black uppercase tracking-wider" style={{ color: t.text }}>Fulfillment Revenue Trend</h3>
+                  <p className="text-[10px] font-semibold" style={{ color: t.textSecondary }}>Chronological sales history for the last 7 active transaction days</p>
+                </div>
+                <div className="flex-grow w-full h-[220px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={getSalesTimelineData()} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.4}/>
+                          <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} />
+                      <XAxis dataKey="date" stroke={t.textSecondary} fontSize={10} tickLine={false} />
+                      <YAxis stroke={t.textSecondary} fontSize={10} tickLine={false} />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: isDark ? "rgba(15,15,15,0.95)" : "rgba(255,255,255,0.95)",
+                          borderColor: t.borderLight,
+                          borderRadius: "12px",
+                          fontSize: "10px",
+                          fontFamily: "inherit"
+                        }}
+                      />
+                      <Area type="monotone" dataKey="revenue" name="Revenue ($)" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Catalog Composition Bar Chart */}
+              <div className="md:col-span-2 p-6 rounded-2xl border backdrop-blur-md flex flex-col min-h-[320px]" style={{ background: t.cardBg, borderColor: t.borderLight }}>
+                <div className="mb-4">
+                  <h3 className="hf text-sm font-black uppercase tracking-wider" style={{ color: t.text }}>Catalog Composition</h3>
+                  <p className="text-[10px] font-semibold" style={{ color: t.textSecondary }}>Ratio of laptops to hardware component inventory records</p>
+                </div>
+                <div className="flex-grow w-full h-[220px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={getStockCompositionData()} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} />
+                      <XAxis dataKey="name" stroke={t.textSecondary} fontSize={10} tickLine={false} />
+                      <YAxis stroke={t.textSecondary} fontSize={10} tickLine={false} />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: isDark ? "rgba(15,15,15,0.95)" : "rgba(255,255,255,0.95)",
+                          borderColor: t.borderLight,
+                          borderRadius: "12px",
+                          fontSize: "10px",
+                          fontFamily: "inherit"
+                        }}
+                      />
+                      <Bar dataKey="count" name="Item Count" radius={[6, 6, 0, 0]}>
+                        {getStockCompositionData().map((entry, idx) => (
+                          <Cell key={`cell-${idx}`} fill={idx === 0 ? "#06b6d4" : "#a855f7"} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
               {/* Status breakdown & recent logs */}
               <div className="md:col-span-2 p-6 rounded-2xl border backdrop-blur-md flex flex-col" style={{ background: t.cardBg, borderColor: t.borderLight }}>
                 <h3 className="hf text-lg font-bold mb-4" style={{ color: t.text }}>Order Dispatch Matrix</h3>
@@ -814,13 +960,25 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y text-xs font-medium" style={{ borderColor: t.borderLight }}>
-                      {orders
-                        .filter(o => 
+                      {(() => {
+                        const filtered = orders.filter(o => 
                           o.customer_name.toLowerCase().includes(orderSearchQuery.toLowerCase()) ||
                           o.customer_email.toLowerCase().includes(orderSearchQuery.toLowerCase()) ||
                           o.tracking_number.toLowerCase().includes(orderSearchQuery.toLowerCase())
-                        )
-                        .map(order => {
+                        );
+                        const sliced = filtered.slice((ordersPage - 1) * ITEMS_PER_PAGE, ordersPage * ITEMS_PER_PAGE);
+
+                        if (sliced.length === 0) {
+                          return (
+                            <tr>
+                              <td colSpan={6} className="py-8 text-center text-xs font-semibold" style={{ color: t.textSecondary }}>
+                                No order logs match the search query.
+                              </td>
+                            </tr>
+                          );
+                        }
+
+                        return sliced.map(order => {
                           let badgeBg = "rgba(168,85,247,0.1)";
                           let badgeText = "#a855f7";
                           if (order.status.toLowerCase() === "pending") { badgeBg = "rgba(148,163,184,0.1)"; badgeText = "#94a3b8"; }
@@ -854,8 +1012,9 @@ export default function AdminDashboard() {
                                   <FontAwesomeIcon icon={faEye} />
                                 </button>
                                 
-                                <div className="relative group">
+                                <div className="relative status-dropdown-container">
                                   <button 
+                                    onClick={() => setOpenDropdownId(openDropdownId === order.id ? null : order.id)}
                                     className="px-3 py-1.5 rounded-lg border font-bold flex items-center gap-1.5 transition-all text-[10px] uppercase"
                                     style={{ borderColor: t.borderLight, color: t.textSecondary }}
                                   >
@@ -863,11 +1022,14 @@ export default function AdminDashboard() {
                                   </button>
                                   
                                   {/* Dropdown Menu */}
-                                  <div className="absolute right-0 mt-1 w-32 rounded-xl border shadow-xl z-25 hidden group-hover:block" style={{ background: t.cardBg, borderColor: t.borderLight }}>
+                                  <div className={`absolute right-0 mt-1 w-32 rounded-xl border shadow-xl z-25 ${openDropdownId === order.id ? "block" : "hidden"}`} style={{ background: t.cardBg, borderColor: t.borderLight }}>
                                     {["pending", "processing", "shipped", "delivered", "cancelled"].map(st => (
                                       <button
                                         key={st}
-                                        onClick={() => handleUpdateOrderStatus(order.id, st)}
+                                        onClick={() => {
+                                          handleUpdateOrderStatus(order.id, st);
+                                          setOpenDropdownId(null);
+                                        }}
                                         className="w-full text-left px-3 py-2 text-[10px] font-bold uppercase transition-colors hover:bg-white/5"
                                         style={{ color: order.status === st ? t.accentText : t.textSecondary }}
                                       >
@@ -879,11 +1041,67 @@ export default function AdminDashboard() {
                               </td>
                             </tr>
                           );
-                        })}
+                        });
+                      })()}
                     </tbody>
                   </table>
                 </div>
               </div>
+
+              {/* Order Pagination Buttons */}
+              {(() => {
+                const filtered = orders.filter(o => 
+                  o.customer_name.toLowerCase().includes(orderSearchQuery.toLowerCase()) ||
+                  o.customer_email.toLowerCase().includes(orderSearchQuery.toLowerCase()) ||
+                  o.tracking_number.toLowerCase().includes(orderSearchQuery.toLowerCase())
+                );
+                const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+                if (totalPages <= 1) return null;
+
+                return (
+                  <div className="flex justify-center items-center gap-3 mt-4">
+                    <button
+                      onClick={() => setOrdersPage(prev => Math.max(prev - 1, 1))}
+                      disabled={ordersPage === 1}
+                      className="w-8 h-8 rounded-xl flex items-center justify-center border transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                      style={{ background: t.cardBg, borderColor: t.borderLight, color: t.text }}
+                    >
+                      <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+                    </button>
+
+                    <div className="flex gap-1.5">
+                      {Array.from({ length: totalPages }).map((_, i) => {
+                        const pageNum = i + 1;
+                        const isActive = pageNum === ordersPage;
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setOrdersPage(pageNum)}
+                            className="w-8 h-8 rounded-xl text-xs font-bold transition-all"
+                            style={{
+                              background: isActive ? "linear-gradient(135deg,#06b6d4,#3b82f6)" : t.cardBg,
+                              border: `1px solid ${isActive ? "transparent" : t.borderLight}`,
+                              color: isActive ? "#fff" : t.textSecondary,
+                              boxShadow: isActive ? "0 4px 10px rgba(6,182,212,0.2)" : "none"
+                            }}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => setOrdersPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={ordersPage === totalPages}
+                      className="w-8 h-8 rounded-xl flex items-center justify-center border transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                      style={{ background: t.cardBg, borderColor: t.borderLight, color: t.text }}
+                    >
+                      <FontAwesomeIcon icon={faChevronRight} className="text-xs" />
+                    </button>
+                  </div>
+                );
+              })()}
             </motion.div>
           )}
 
@@ -924,59 +1142,7 @@ export default function AdminDashboard() {
                 <button
                   onClick={() => {
                     setEditingProductId(null);
-                    setFormData(inventoryType === "laptop" ? {
-                      name: "",
-                      brand: "",
-                      tagline: "Experience peak gaming performance.",
-                      price: 1500,
-                      original_price: 1800,
-                      discount_price: 0,
-                      category: "Gaming",
-                      sub_category: "rtx-40-series",
-                      stock: 10,
-                      images: "",
-                      description: "",
-                      badge: "none",
-                      is_deal: false,
-                      is_new: false,
-                      specs: JSON.stringify([
-                        { "label": "CPU", "value": "Intel Core i7-13700H", "color": "cyan" },
-                        { "label": "GPU", "value": "NVIDIA RTX 4060", "color": "green" },
-                        { "label": "RAM", "value": "16GB DDR5", "color": "blue" }
-                      ], null, 2),
-                      technical_metadata: JSON.stringify({
-                        "cpu_brand": "intel",
-                        "gpu_brand": "nvidia",
-                        "ram_gb": 16,
-                        "storage_gb": 512
-                      }, null, 2),
-                      color_variants: JSON.stringify([
-                        { "name": "Midnight Black", "hex": "#0a0a0a" }
-                      ], null, 2)
-                    } : {
-                      name: "",
-                      brand: "",
-                      tagline: "",
-                      price: 350,
-                      original_price: 0,
-                      discount_price: 300,
-                      category: "CPU",
-                      sub_category: "",
-                      stock: 15,
-                      images: "",
-                      description: "",
-                      badge: "none",
-                      is_deal: false,
-                      is_new: true,
-                      specs: JSON.stringify({
-                        "socket": "AM5",
-                        "cores": "8 Cores",
-                        "threads": "16 Threads",
-                        "baseClock": "3.8 GHz"
-                      }, null, 2),
-                      technical_metadata: "",
-                      color_variants: "[]"
-                    });
+                    setFormData(inventoryType === "laptop" ? DEFAULT_LAPTOP_FORM : DEFAULT_HARDWARE_FORM);
                     setIsAddModalOpen(true);
                   }}
                   className="px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] flex items-center gap-2 self-start sm:self-auto shadow-lg"
@@ -1015,12 +1181,25 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y text-xs font-medium" style={{ borderColor: t.borderLight }}>
-                      {(inventoryType === "laptop" ? laptops : hardware)
-                        .filter(item => 
+                      {(() => {
+                        const items = inventoryType === "laptop" ? laptops : hardware;
+                        const filtered = items.filter(item => 
                           item.name.toLowerCase().includes(inventorySearchQuery.toLowerCase()) ||
                           item.brand.toLowerCase().includes(inventorySearchQuery.toLowerCase())
-                        )
-                        .map(item => {
+                        );
+                        const sliced = filtered.slice((inventoryPage - 1) * ITEMS_PER_PAGE, inventoryPage * ITEMS_PER_PAGE);
+
+                        if (sliced.length === 0) {
+                          return (
+                            <tr>
+                              <td colSpan={7} className="py-8 text-center text-xs font-semibold" style={{ color: t.textSecondary }}>
+                                No products cataloged in this matrix coordinate.
+                              </td>
+                            </tr>
+                          );
+                        }
+
+                        return sliced.map(item => {
                           const isLow = item.stock < 5 && item.stock > 0;
                           const isOut = item.stock === 0;
 
@@ -1096,11 +1275,67 @@ export default function AdminDashboard() {
                               </td>
                             </tr>
                           );
-                        })}
+                        });
+                      })()}
                     </tbody>
                   </table>
                 </div>
               </div>
+
+              {/* Inventory Pagination Controls */}
+              {(() => {
+                const items = inventoryType === "laptop" ? laptops : hardware;
+                const filtered = items.filter(item => 
+                  item.name.toLowerCase().includes(inventorySearchQuery.toLowerCase()) ||
+                  item.brand.toLowerCase().includes(inventorySearchQuery.toLowerCase())
+                );
+                const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+                if (totalPages <= 1) return null;
+
+                return (
+                  <div className="flex justify-center items-center gap-3 mt-4">
+                    <button
+                      onClick={() => setInventoryPage(prev => Math.max(prev - 1, 1))}
+                      disabled={inventoryPage === 1}
+                      className="w-8 h-8 rounded-xl flex items-center justify-center border transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                      style={{ background: t.cardBg, borderColor: t.borderLight, color: t.text }}
+                    >
+                      <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+                    </button>
+
+                    <div className="flex gap-1.5">
+                      {Array.from({ length: totalPages }).map((_, i) => {
+                        const pageNum = i + 1;
+                        const isActive = pageNum === inventoryPage;
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setInventoryPage(pageNum)}
+                            className="w-8 h-8 rounded-xl text-xs font-bold transition-all"
+                            style={{
+                              background: isActive ? "linear-gradient(135deg,#06b6d4,#3b82f6)" : t.cardBg,
+                              border: `1px solid ${isActive ? "transparent" : t.borderLight}`,
+                              color: isActive ? "#fff" : t.textSecondary,
+                              boxShadow: isActive ? "0 4px 10px rgba(6,182,212,0.2)" : "none"
+                            }}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => setInventoryPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={inventoryPage === totalPages}
+                      className="w-8 h-8 rounded-xl flex items-center justify-center border transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                      style={{ background: t.cardBg, borderColor: t.borderLight, color: t.text }}
+                    >
+                      <FontAwesomeIcon icon={faChevronRight} className="text-xs" />
+                    </button>
+                  </div>
+                );
+              })()}
             </motion.div>
           )}
         </AnimatePresence>
@@ -1423,7 +1658,7 @@ export default function AdminDashboard() {
                         value={formData.category}
                         onChange={e => {
                           const cat = e.target.value;
-                          setFormData(prev => {
+                          setFormData((prev: any) => {
                             // Populate default specs for that category if available
                             let defaultSpecs = "{}";
                             if (cat === "CPU") {
@@ -2051,6 +2286,89 @@ export default function AdminDashboard() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Dynamic Toast System Overlay */}
+      <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-[99999] pointer-events-none">
+        <AnimatePresence>
+          {toasts.map(toast => {
+            let color = "#06b6d4"; // success: cyan
+            let border = "rgba(6, 182, 212, 0.2)";
+            if (toast.type === "error") {
+              color = "#ef4444";
+              border = "rgba(239, 68, 68, 0.2)";
+            } else if (toast.type === "info") {
+              color = "#3b82f6";
+              border = "rgba(59, 130, 246, 0.2)";
+            }
+            return (
+              <motion.div
+                key={toast.id}
+                initial={{ opacity: 0, y: 20, scale: 0.9, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 0.9, filter: "blur(4px)" }}
+                className="pointer-events-auto px-5 py-3.5 rounded-2xl border backdrop-blur-md shadow-2xl flex items-center gap-3 text-xs font-bold max-w-sm"
+                style={{
+                  background: isDark ? "rgba(12, 12, 12, 0.92)" : "rgba(255, 255, 255, 0.92)",
+                  borderColor: border,
+                  boxShadow: `0 10px 30px -10px ${border}`,
+                  color: isDark ? "#fff" : "#000"
+                }}
+              >
+                <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: color }} />
+                <span>{toast.message}</span>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+
+      {/* Custom Confirmation Dialog Modal Overlay */}
+      <AnimatePresence>
+        {confirmModal?.isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              className="max-w-md w-full rounded-3xl border p-6 backdrop-blur-xl flex flex-col gap-6 shadow-2xl"
+              style={{
+                background: isDark ? "rgba(20, 20, 20, 0.96)" : "rgba(255, 255, 255, 0.96)",
+                borderColor: t.borderLight
+              }}
+            >
+              <div>
+                <h4 className="hf text-base font-black uppercase tracking-wider text-red-500 mb-2">
+                  {confirmModal.title}
+                </h4>
+                <p className="text-xs font-medium leading-relaxed" style={{ color: t.textSecondary }}>
+                  {confirmModal.message}
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 text-[10px] font-black uppercase tracking-widest">
+                <button
+                  onClick={() => setConfirmModal(null)}
+                  className="px-5 py-2.5 rounded-xl border transition-all hover:bg-white/5"
+                  style={{ borderColor: t.borderLight, color: t.text }}
+                >
+                  Abort Action
+                </button>
+                <button
+                  onClick={confirmModal.onConfirm}
+                  className="px-6 py-2.5 rounded-xl text-white transition-all bg-red-600 hover:bg-red-500 shadow-lg shadow-red-500/20 active:scale-95"
+                >
+                  Confirm Execute
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
